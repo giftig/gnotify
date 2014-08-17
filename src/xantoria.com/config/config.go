@@ -10,13 +10,13 @@ import (
 )
 
 type YAMLConfig struct {
-  Polling PollingConfig `yaml:"polling"`
-  Logging LoggingConfig `yaml:"logging"`
+  Polling PollingConfig
+  Logging LoggingConfig
 }
 
 type LoggingConfig struct {
-  Type string `yaml:"type"`
-  File string `yaml:"file"`
+  Type string
+  File string
 }
 
 type PollingConfig struct {
