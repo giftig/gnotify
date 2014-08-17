@@ -1,0 +1,15 @@
+.*
+!/.gitignore
+*.swp
+*.swo
+
+# Don't commit binaries
+/bin
+/pkg
+
+# Third party packages
+/src/launchpad.net
+/src/github.com
+
+# Log files
+*.log
