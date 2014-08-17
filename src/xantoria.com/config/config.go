@@ -6,7 +6,7 @@ import (
   "os"
   "time"
 
-  "launchpad.net/goyaml"
+  "gopkg.in/yaml.v1"
 )
 
 type YAMLConfig struct {
@@ -20,18 +20,8 @@ type LoggingConfig struct {
 }
 
 type PollingConfig struct {
-  Notify, Sync *YAMLDuration
+  Notify, Sync time.Duration
 }
-type YAMLDuration time.Duration
-
-func (duration *YAMLDuration) SetYAML(tag string, value interface{}) bool {
-  timeDuration, err := time.ParseDuration(value.(string))
-  if err != nil { return false }
-
-  *duration = YAMLDuration(timeDuration)
-  return true
-}
-
 
 var Config YAMLConfig
 
@@ -42,7 +32,7 @@ func LoadConfig(file string) error {
   data, err := ioutil.ReadFile(file)
   if err != nil { return err }
 
-  return goyaml.Unmarshal(data, &Config)
+  return yaml.Unmarshal(data, &Config)
 }
 
 /**

@@ -1,1 +1,1 @@
-launchpad.net/goyaml
+gopkg.in/yaml.v1

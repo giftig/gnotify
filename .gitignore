@@ -10,6 +10,7 @@
 # Third party packages
 /src/launchpad.net
 /src/github.com
+/src/gopkg.in/
 
 # Log files
 *.log
