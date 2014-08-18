@@ -1,6 +1,5 @@
 polling:
-  notify: 1s
-  sync: 1h
+  sync: 10s
 
 logging:
   type: console

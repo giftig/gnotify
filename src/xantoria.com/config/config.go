@@ -20,7 +20,7 @@ type LoggingConfig struct {
 }
 
 type PollingConfig struct {
-  Notify, Sync time.Duration
+  Sync time.Duration
 }
 
 var Config YAMLConfig
