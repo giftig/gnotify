@@ -8,9 +8,10 @@
 /pkg
 
 # Third party packages
-/src/launchpad.net
-/src/github.com
-/src/gopkg.in/
-
+/src/*
+!/src/xantoria.com
 # Log files
 *.log
+
+# Cache files
+/_oauth_cache.json

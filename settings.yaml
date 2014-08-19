@@ -1,3 +1,26 @@
+auth:
+  google:
+    # Client ID and secret (see developer API console)
+    client_id:
+      1081816473014-cv0v79hf55ojeds7karirls7lk6c2g5n.apps.googleusercontent.com
+    secret: q3MzxFjQEiR5Kuy8-mODkCzk
+
+    # Endpoints for authorising and requesting a token respectively
+    auth_endpoint: https://accounts.google.com/o/oauth2/auth
+    token_endpoint: https://accounts.google.com/o/oauth2/token
+
+    # The method of retrieving the auth code: ask the user to copy it
+    redirect_uri: urn:ietf:wg:oauth:2.0:oob
+
+    # The access scope we're requesting: calendar readonly access
+    scope: https://www.googleapis.com/auth/calendar.readonly
+
+    account:
+      # The calendar to use
+      calendar_id: giftiger.wunsch@gmail.com
+      # When a code has been retrieved via the auth endpoint, it's stored here
+      code: 4/fFKxglarpWG3Dnkhzub6Ky2D0koc.8uCKmmNZZ_gfoiIBeO6P2m-g6JjgjwI
+
 polling:
   sync: 10s
 

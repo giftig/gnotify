@@ -24,8 +24,11 @@ func main() {
   syncTicker := time.NewTicker(config.Config.Polling.Sync)
   notificationChannel := make(chan *gcalendar.Notification)
 
+  // FIXME: Needs to be in syncOccasionally
+  gcalendar.GetCalendar()
+
   go initNotifications(notificationChannel)
-  syncOccasionally(syncTicker.C, notificationChannel)
+  loadNotifications(syncTicker.C, notificationChannel)
 }
 
 func initNotifications(notifications <-chan *gcalendar.Notification) {
@@ -46,13 +49,14 @@ func initNotifications(notifications <-chan *gcalendar.Notification) {
   }
 }
 
-func syncOccasionally(
+func loadNotifications(
   ticks <-chan time.Time,
   notificationChannel chan *gcalendar.Notification,
 ) {
   for {
     _ = <-ticks
-    log.Printf("Syncing with google calendar")
+    log.Print("Loading notifications from google calendar")
+    gcalendar.GetCalendar()
 
     // FIXME: For now I'm just going to create some notifications and send
     // them into the notifications channel

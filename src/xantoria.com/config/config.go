@@ -10,6 +10,7 @@ import (
 )
 
 type YAMLConfig struct {
+  Auth AuthConfig
   Polling PollingConfig
   Logging LoggingConfig
 }
@@ -21,6 +22,23 @@ type LoggingConfig struct {
 
 type PollingConfig struct {
   Sync time.Duration
+}
+
+type AuthConfig struct {
+  Google GoogleAuthConfig
+}
+type GoogleAuthConfig struct {
+  ClientID string `yaml:"client_id"`
+  Secret string
+  AuthEndpoint string `yaml:"auth_endpoint"`
+  TokenEndpoint string `yaml:"token_endpoint"`
+  RedirectURI string `yaml:"redirect_uri"`
+  Scope string
+  Account GoogleAccountConfig
+}
+type GoogleAccountConfig struct {
+  Code string
+  CalendarID string `yaml:"calendar_id"`
 }
 
 var Config YAMLConfig
