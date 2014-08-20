@@ -13,7 +13,9 @@ type YAMLConfig struct {
   Auth AuthConfig
   Polling PollingConfig
   Logging LoggingConfig
+
   Notifications NotificationConfig
+  EventTypes EventTypesConfig `yaml:"event_types"`
 
   DatetimeFormat string `yaml:"datetime_format"`
   DateFormat string `yaml:"date_format"`
@@ -50,6 +52,13 @@ type GoogleAuthConfig struct {
 type GoogleAccountConfig struct {
   Code string
   CalendarID string `yaml:"calendar_id"`
+}
+
+type EventTypesConfig struct {
+  Calendar CalendarEventConfig
+}
+type CalendarEventConfig struct {
+  Icon, Label string
 }
 
 var Config YAMLConfig

@@ -35,3 +35,8 @@ logging:
 notifications:
   notify_send:
     duration: 5s
+
+event_types:
+  calendar:
+    icon: /home/giftiger_wunsch/Images/icons/calendar.png  # FIXME: Should be local
+    label: google-calendar

@@ -114,8 +114,8 @@ func GetCalendar(notifications chan *Notification) {
     notif := Notification{
       Title: "Calendar event",
       Message: event.Summary,
-      Icon: "/home/giftiger_wunsch/Downloads/calendar-icon.png",  // FIXME
-      Source: "google-calendar",
+      Icon: config.Config.EventTypes.Calendar.Icon,
+      Source: config.Config.EventTypes.Calendar.Label,
       Id: event.Id,
       Time: eventTime,
       Complete: event.Status == "complete",
