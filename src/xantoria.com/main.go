@@ -42,7 +42,10 @@ func initNotifications(notifications <-chan *gcalendar.Notification) {
       timer := time.NewTimer(diff)
       go func() {
         _ = <-timer.C
-        log.Printf("NOTIFY: %s (%s)", notification.Id, notification.Title)
+        err := notification.Display()
+        if err == nil {
+          notification.Complete = true
+        }
       }()
     } else {
       notification.Complete = true

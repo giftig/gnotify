@@ -13,6 +13,8 @@ type YAMLConfig struct {
   Auth AuthConfig
   Polling PollingConfig
   Logging LoggingConfig
+  Notifications NotificationConfig
+
   DatetimeFormat string `yaml:"datetime_format"`
   DateFormat string `yaml:"date_format"`
 }
@@ -24,6 +26,13 @@ type LoggingConfig struct {
 
 type PollingConfig struct {
   Sync time.Duration
+}
+
+type NotificationConfig struct {
+  NotifySend NotifySendConfig `yaml:"notify_send"`
+}
+type NotifySendConfig struct {
+  Duration time.Duration
 }
 
 type AuthConfig struct {

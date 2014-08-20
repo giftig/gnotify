@@ -31,3 +31,7 @@ polling:
 
 logging:
   type: console
+
+notifications:
+  notify_send:
+    duration: 5s
