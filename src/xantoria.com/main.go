@@ -24,9 +24,6 @@ func main() {
   syncTicker := time.NewTicker(config.Config.Polling.Sync)
   notificationChannel := make(chan *gcalendar.Notification)
 
-  // FIXME: Needs to be in syncOccasionally
-  gcalendar.GetCalendar()
-
   go initNotifications(notificationChannel)
   loadNotifications(syncTicker.C, notificationChannel)
 }
@@ -34,14 +31,18 @@ func main() {
 func initNotifications(notifications <-chan *gcalendar.Notification) {
   for {
     notification := <-notifications
-    log.Printf("Initialising notification %s", notification.Title)
+    log.Printf(
+      "INIT: %s (%s)",
+      notification.Id,
+      notification.Title,
+    )
 
     diff := notification.Time.Sub(time.Now())
     if diff > 0 {
       timer := time.NewTimer(diff)
       go func() {
         _ = <-timer.C
-        log.Printf("Displaying notification %s", notification.Title)
+        log.Printf("NOTIFY: %s (%s)", notification.Id, notification.Title)
       }()
     } else {
       notification.Complete = true
@@ -54,19 +55,8 @@ func loadNotifications(
   notificationChannel chan *gcalendar.Notification,
 ) {
   for {
+    log.Print("LOAD: Google calendar")
+    gcalendar.GetCalendar(notificationChannel)
     _ = <-ticks
-    log.Print("Loading notifications from google calendar")
-    gcalendar.GetCalendar()
-
-    // FIXME: For now I'm just going to create some notifications and send
-    // them into the notifications channel
-    notification := gcalendar.Notification{
-      "Test notification",
-      "This is my lovely test notification",
-      "/home/giftiger_wunsch/Downloads/fire.png",
-      time.Date(2014, 8, 18, 20, 48, 0, 0, time.FixedZone("UTC", 0)),
-      false,
-    }
-    notificationChannel <- &notification
   }
 }

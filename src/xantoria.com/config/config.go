@@ -13,6 +13,8 @@ type YAMLConfig struct {
   Auth AuthConfig
   Polling PollingConfig
   Logging LoggingConfig
+  DatetimeFormat string `yaml:"datetime_format"`
+  DateFormat string `yaml:"date_format"`
 }
 
 type LoggingConfig struct {

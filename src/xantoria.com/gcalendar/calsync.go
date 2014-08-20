@@ -5,6 +5,8 @@ import (
   "fmt"
   "io/ioutil"
   "log"
+  "net/url"
+  "time"
 
   "code.google.com/p/goauth2/oauth"
   "github.com/skratchdot/open-golang/open"
@@ -17,8 +19,12 @@ type CalendarEvents struct {
   Items []CalendarEvent
 }
 type CalendarEvent struct {
-  Status, Summary string
-  Start, End string
+  Id, Status, Summary string
+  Start, End CalendarDate
+}
+type CalendarDate struct {
+  Date string
+  Datetime string `json:"dateTime"`
 }
 
 
@@ -56,12 +62,23 @@ func authenticate() (transport *oauth.Transport) {
   return
 }
 
-func GetCalendar() {
+/**
+ * Connect to google calendar, synchronise notifications based on the calendar
+ * contents, and push new notifications to the provided channel
+ */
+func GetCalendar(notifications chan *Notification) {
   transport := authenticate()
+  now := url.QueryEscape(time.Now().Format(config.Config.DatetimeFormat))
 
+  // Get future events
   r, err := transport.Client().Get(fmt.Sprintf(
-    "https://www.googleapis.com/calendar/v3/calendars/%s/events",
+    "https://www.googleapis.com/calendar/v3/calendars/%s/events?" +
+    "alwaysIncludeEmail=false&" +
+    "maxAttendees=1&" +
+    "timeMin=%s&" +
+    "timeZone=UTC",
     config.Config.Auth.Google.Account.CalendarID,
+    now,
   ))
   if err != nil {
     log.Fatal("SYNC: Request failed:", err)
@@ -77,6 +94,32 @@ func GetCalendar() {
   // Make sure no duplicate Notifications are created though
   var data CalendarEvents
   json.Unmarshal(responseText, &data)
-  fmt.Printf("DATA ===== %s", responseText)
-  fmt.Println()
+
+  for _, event := range(data.Items) {
+    // Detect date or datetime fields for the event and pick the right format to parse
+    var rawTime, timeFormat string
+    if event.Start.Datetime != "" {
+      rawTime = event.Start.Datetime
+      timeFormat = config.Config.DatetimeFormat
+    } else {
+      rawTime = event.Start.Date
+      timeFormat = config.Config.DateFormat
+    }
+
+    eventTime, err := time.Parse(timeFormat, rawTime)
+    if err != nil {
+      log.Printf("SYNC: Time parse error: '%s'; skipping event %s", rawTime, event.Id)
+      continue
+    }
+    notif := Notification{
+      Title: "Calendar event",
+      Message: event.Summary,
+      Icon: "/home/giftiger_wunsch/Downloads/calendar-icon.png",  // FIXME
+      Source: "google-calendar",
+      Id: event.Id,
+      Time: eventTime,
+      Complete: event.Status == "complete",
+    }
+    notifications <- &notif
+  }
 }

@@ -21,8 +21,13 @@ auth:
       # When a code has been retrieved via the auth endpoint, it's stored here
       code: 4/fFKxglarpWG3Dnkhzub6Ky2D0koc.8uCKmmNZZ_gfoiIBeO6P2m-g6JjgjwI
 
+# Golang is weird and makes you specify a datetime format by using the
+# "reference time", 2006-01-02 15:04:05
+datetime_format: 2006-01-02T15:04:05Z
+date_format: 2006-01-02
+
 polling:
-  sync: 10s
+  sync: 1h
 
 logging:
   type: console
