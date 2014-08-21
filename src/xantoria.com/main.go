@@ -3,6 +3,7 @@ package main
 import (
   "log"
   "os"
+  "path/filepath"
   "time"
 
   "xantoria.com/config"
@@ -10,7 +11,7 @@ import (
 )
 
 func main() {
-  settingsFile := "settings.yaml"
+  settingsFile, _ := filepath.Abs(filepath.Dir(os.Args[0]) + "/../etc/gnotify.conf")
   if len(os.Args) > 1 {
     settingsFile = os.Args[1]
   }
