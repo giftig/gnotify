@@ -1,5 +1,5 @@
-Google Calendar Project
-=======================
+Gnotify
+=======
 
 Purpose
 -------
@@ -10,18 +10,18 @@ a variety of methods including:
   * The notify-send command, to produce a nice notification pop up in linux
   * Playing a sound if appropriate
   * Sending a notification to raspbmc
+  * Additional options to come!
 
+In future it will also provide additional sources of notifications and means of
+notifying users about them.
 
 Structure
 ---------
-Google Calendar events will be stored in redis with the (configurable) key
+The application will synchronise with google calendar with a frequency defined
+in the config (every 1h by default). It will grab notifications at that point
+and pump them to the initNotifications task to schedule the notification events.
 
-  gcal:event:[event-type]:[event-id]
-
-This allows some persistence so that we don't lose stuffs when the application
-restarts. It will synchronise this data with the google calendar via its API
-every hour (configurable).
-
-Every minute (also configurable), we check if there's an event for which a
-notification is required, and display the notification as needed. The event
-will be marked as notified.
+It's currently not incredibly smart about this: there's no persistence other
+than that offered by syncing with the google calendar, we don't try to make up
+for missing a notification which should've occurred when the application wasn't
+running, etc. These features will be added in due time.

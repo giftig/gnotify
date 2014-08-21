@@ -31,6 +31,8 @@ func main() {
 
 func initNotifications(notifications <-chan *gcalendar.Notification) {
   for {
+    // TODO: Stick notifications somewhere and make sure that
+    // TODO: id and source are unique together
     notification := <-notifications
     log.Printf(
       "INIT: %s (%s)",
@@ -45,6 +47,8 @@ func initNotifications(notifications <-chan *gcalendar.Notification) {
         _ = <-timer.C
         err := notification.Display()
         if err == nil {
+          // TODO: This doesn't actually do anything until they're actually
+          // TODO: organised and properly synced with a local datastore.
           notification.Complete = true
         }
       }()
