@@ -25,3 +25,11 @@ It's currently not incredibly smart about this: there's no persistence other
 than that offered by syncing with the google calendar, we don't try to make up
 for missing a notification which should've occurred when the application wasn't
 running, etc. These features will be added in due time.
+
+Dependencies
+------------
+Go dependencies are stated in requirements.txt and installed by dependencies.sh.
+Other dependencies are optional, depending on how the notification system is
+configured:
+  * notify-send: One method of displaying a notification
+  * Other methods to come, which bring dependencies
