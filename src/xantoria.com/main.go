@@ -7,7 +7,7 @@ import (
   "time"
 
   "xantoria.com/config"
-  "xantoria.com/gcalendar"
+  "xantoria.com/gnotify"
 )
 
 func main() {
@@ -23,13 +23,13 @@ func main() {
   config.ConfigureLogger()
 
   syncTicker := time.NewTicker(config.Config.Polling.Sync)
-  notificationChannel := make(chan *gcalendar.Notification)
+  notificationChannel := make(chan *gnotify.Notification)
 
   go initNotifications(notificationChannel)
   loadNotifications(syncTicker.C, notificationChannel)
 }
 
-func initNotifications(notifications <-chan *gcalendar.Notification) {
+func initNotifications(notifications <-chan *gnotify.Notification) {
   for {
     // TODO: Stick notifications somewhere and make sure that
     // TODO: id and source are unique together
@@ -60,11 +60,11 @@ func initNotifications(notifications <-chan *gcalendar.Notification) {
 
 func loadNotifications(
   ticks <-chan time.Time,
-  notificationChannel chan *gcalendar.Notification,
+  notificationChannel chan *gnotify.Notification,
 ) {
   for {
     log.Print("LOAD: Google calendar")
-    gcalendar.GetCalendar(notificationChannel)
+    gnotify.GetCalendar(notificationChannel)
     _ = <-ticks
   }
 }

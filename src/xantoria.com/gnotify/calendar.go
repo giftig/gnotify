@@ -1,4 +1,4 @@
-package gcalendar
+package gnotify
 
 import (
   "encoding/json"
