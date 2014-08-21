@@ -34,7 +34,7 @@ logging:
 
 notifications:
   notify_send:
-    duration: 5s
+    duration: 1m
 
 event_types:
   calendar:
