@@ -60,7 +60,8 @@ func initNotifications(notifications <-chan *gnotify.Notification) {
         }
       }()
     } else {
-      notification.Complete = true
+      // This shouldn't really happen as we only ask google for future events
+      log.Printf("OLD: %s (%s)", notification.Id, notification.Title)
     }
   }
 }
