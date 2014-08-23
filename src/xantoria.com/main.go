@@ -29,16 +29,23 @@ func main() {
   loadNotifications(syncTicker.C, notificationChannel)
 }
 
+/**
+ * Wait for notifications on the given channel and initialise them, adding
+ * them to the stored notifications and starting a timer to trigger their
+ * display.
+ */
 func initNotifications(notifications <-chan *gnotify.Notification) {
   for {
-    // TODO: Stick notifications somewhere and make sure that
-    // TODO: id and source are unique together
     notification := <-notifications
-    log.Printf(
-      "INIT: %s (%s)",
-      notification.Id,
-      notification.Title,
-    )
+
+    // Stick it in the registered notifications store, excluding duplicates
+    inserted := gnotify.AddNotification(*notification)
+    if !inserted {
+      log.Printf("DUP: %s (%s)", notification.Id, notification.Title)
+      continue
+    }
+
+    log.Printf("INIT: %s (%s)", notification.Id, notification.Title)
 
     diff := notification.Time.Sub(time.Now())
     if diff > 0 {
