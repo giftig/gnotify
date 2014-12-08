@@ -15,3 +15,6 @@
 
 # Cache files
 /_oauth_cache.json
+
+# Convenience symlink to /etc/gnotify.conf
+/dev.yaml

@@ -1,64 +1,64 @@
 package config
 
 import (
-  "io/ioutil"
-  "log"
-  "os"
-  "time"
+	"io/ioutil"
+	"log"
+	"os"
+	"time"
 
-  "gopkg.in/yaml.v1"
+	"gopkg.in/yaml.v1"
 )
 
 type YAMLConfig struct {
-  Auth AuthConfig
-  Polling PollingConfig
-  Logging LoggingConfig
+	Auth    AuthConfig
+	Polling PollingConfig
+	Logging LoggingConfig
 
-  Notifications NotificationConfig
-  EventTypes EventTypesConfig `yaml:"event_types"`
+	Notifications NotificationConfig
+	EventTypes    EventTypesConfig `yaml:"event_types"`
 
-  DatetimeFormat string `yaml:"datetime_format"`
-  DateFormat string `yaml:"date_format"`
+	DatetimeFormat string `yaml:"datetime_format"`
+	DateFormat     string `yaml:"date_format"`
 }
 
 type LoggingConfig struct {
-  Type string
-  File string
+	Type string
+	File string
 }
 
 type PollingConfig struct {
-  Sync time.Duration
+	Sync time.Duration
 }
 
 type NotificationConfig struct {
-  NotifySend NotifySendConfig `yaml:"notify_send"`
+	NotifySend NotifySendConfig `yaml:"notify_send"`
 }
 type NotifySendConfig struct {
-  Duration time.Duration
+	Duration time.Duration
 }
 
 type AuthConfig struct {
-  Google GoogleAuthConfig
+	Google GoogleAuthConfig
 }
 type GoogleAuthConfig struct {
-  ClientID string `yaml:"client_id"`
-  Secret string
-  AuthEndpoint string `yaml:"auth_endpoint"`
-  TokenEndpoint string `yaml:"token_endpoint"`
-  RedirectURI string `yaml:"redirect_uri"`
-  Scope string
-  Account GoogleAccountConfig
+	ClientID      string `yaml:"client_id"`
+	Secret        string
+	AuthEndpoint  string `yaml:"auth_endpoint"`
+	TokenEndpoint string `yaml:"token_endpoint"`
+	RedirectURI   string `yaml:"redirect_uri"`
+	Scope         string
+	Account       GoogleAccountConfig
 }
 type GoogleAccountConfig struct {
-  Code string
-  CalendarID string `yaml:"calendar_id"`
+	Code       string
+	CalendarID string `yaml:"calendar_id"`
 }
 
 type EventTypesConfig struct {
-  Calendar CalendarEventConfig
+	Calendar CalendarEventConfig
 }
 type CalendarEventConfig struct {
-  Icon, Label string
+	Icon, Label string
 }
 
 var Config YAMLConfig
@@ -67,33 +67,35 @@ var Config YAMLConfig
  * Load config from the given file and stick it into Config
  */
 func LoadConfig(file string) error {
-  data, err := ioutil.ReadFile(file)
-  if err != nil { return err }
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		return err
+	}
 
-  return yaml.Unmarshal(data, &Config)
+	return yaml.Unmarshal(data, &Config)
 }
 
 /**
  * Configure the Logger based on logging config
  */
 func ConfigureLogger() {
-  loggerConfig := Config.Logging
-  if loggerConfig.Type == "" {
-    loggerConfig = LoggingConfig{"console", ""}
-  }
+	loggerConfig := Config.Logging
+	if loggerConfig.Type == "" {
+		loggerConfig = LoggingConfig{"console", ""}
+	}
 
-  switch loggerConfig.Type {
-    case "console":
-      break  // Console is the default logging configuration anyway
-    case "file":
-      f, err := os.OpenFile(
-        loggerConfig.File,
-        os.O_RDWR | os.O_CREATE | os.O_APPEND,
-        0644,
-      )
-      if err != nil {
-        log.Fatalf("The logfile %s could not be accessed", loggerConfig.File)
-      }
-      log.SetOutput(f)
-  }
+	switch loggerConfig.Type {
+	case "console":
+		break // Console is the default logging configuration anyway
+	case "file":
+		f, err := os.OpenFile(
+			loggerConfig.File,
+			os.O_RDWR|os.O_CREATE|os.O_APPEND,
+			0644,
+		)
+		if err != nil {
+			log.Fatalf("The logfile %s could not be accessed", loggerConfig.File)
+		}
+		log.SetOutput(f)
+	}
 }
