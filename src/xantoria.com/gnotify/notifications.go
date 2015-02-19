@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os/exec"
 	"time"
 
 	"xantoria.com/gnotify/config"
+	"xantoria.com/gnotify/log"
 )
 
 type Notification struct {
@@ -24,7 +24,7 @@ var notifications []Notification
  * TODO: Support multiple, optional methods. For now, notify-send only
  */
 func (notification *Notification) Display() (err error) {
-	log.Printf("NOTIFY: %s (%s)", notification.Id, notification.Title)
+	log.Debug("NOTIFY: %s (%s)", notification.Id, notification.Title)
 	cmd := exec.Command(
 		"/usr/bin/notify-send",
 		"-i", notification.Icon,
@@ -35,7 +35,7 @@ func (notification *Notification) Display() (err error) {
 
 	err = cmd.Run()
 	if err != nil {
-		log.Printf("NOTIFY: ERROR: Command failed: `%s %s`", cmd.Path, cmd.Args)
+		log.Critical("NOTIFY: Command failed: `%s %s`", cmd.Path, cmd.Args)
 	}
 	return
 }

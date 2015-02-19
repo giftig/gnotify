@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/url"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/skratchdot/open-golang/open"
 
 	"xantoria.com/gnotify/config"
+	"xantoria.com/gnotify/log"
 )
 
 type CalendarEvents struct {
@@ -48,7 +48,7 @@ func authenticate() (transport *oauth.Transport) {
 	// We don't have a cached token: we'll need to request one
 	if err != nil {
 		if code == "" {
-			log.Print("The account code needs to be set in the config.")
+			log.Warning("The account code needs to be set in the config.")
 			open.Run(oauthConfig.AuthCodeURL(""))
 			return
 		}
@@ -80,13 +80,13 @@ func GetCalendar(notifications chan *Notification) {
 		now,
 	))
 	if err != nil {
-		log.Fatal("SYNC: Request failed:", err)
+		log.Fatal("SYNC: Request failed: ", err)
 	}
 	defer r.Body.Close()
 
 	responseText, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Print("SYNC: Error reading response body")
+		log.Error("SYNC: Error reading response body %v", err)
 	}
 
 	var data CalendarEvents
@@ -105,7 +105,7 @@ func GetCalendar(notifications chan *Notification) {
 
 		eventTime, err := time.Parse(timeFormat, rawTime)
 		if err != nil {
-			log.Printf("SYNC: Time parse error: '%s'; skipping event %s", rawTime, event.Id)
+			log.Error("SYNC: Time parse error: '%s'; skipping event %s", rawTime, event.Id)
 			continue
 		}
 		notif := Notification{

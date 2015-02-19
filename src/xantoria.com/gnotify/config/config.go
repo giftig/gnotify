@@ -3,15 +3,16 @@ package config
 import (
 	"io/ioutil"
 	"log"
-	"os"
 	"time"
 
 	"gopkg.in/yaml.v1"
 )
 
 type loggingConfig struct {
-	Type string
-	File string
+	Type      string `yaml:"type"`
+	File      string `yaml:"file"`
+	Level     string `yaml:"level"`
+	Formatter string `yaml:"formatter"`
 }
 
 type pollingConfig struct {
@@ -61,10 +62,10 @@ var DateFormat string
 /**
  * Load config from the given file and stick it into Config
  */
-func LoadConfig(file string) error {
+func LoadConfig(file string) {
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
-		return err
+		log.Fatalf("Error reading config file: %v", err)
 	}
 
 	// Unmarshal the config directly into package-level structs for each section
@@ -86,29 +87,7 @@ func LoadConfig(file string) error {
 		DateFormat:     &DateFormat,
 	}
 
-	return yaml.Unmarshal(data, &cfg)
-}
-
-/**
- * Configure the Logger based on logging config
- */
-func ConfigureLogger() {
-	if Logging.Type == "" {
-		Logging = loggingConfig{"console", ""}
-	}
-
-	switch Logging.Type {
-	case "console":
-		break // Console is the default logging configuration anyway
-	case "file":
-		f, err := os.OpenFile(
-			Logging.File,
-			os.O_RDWR|os.O_CREATE|os.O_APPEND,
-			0644,
-		)
-		if err != nil {
-			log.Fatalf("The logfile %s could not be accessed", Logging.File)
-		}
-		log.SetOutput(f)
+	if err = yaml.Unmarshal(data, &cfg); err != nil {
+		log.Fatalf("Error parsing config file: %v", err)
 	}
 }

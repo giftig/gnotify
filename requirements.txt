@@ -1,3 +1,4 @@
 gopkg.in/yaml.v1
 code.google.com/p/goauth2/oauth
 github.com/skratchdot/open-golang/open
+github.com/op/go-logging

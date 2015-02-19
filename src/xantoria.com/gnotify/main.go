@@ -1,12 +1,12 @@
 package main
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"time"
 
 	"xantoria.com/gnotify/config"
+	"xantoria.com/gnotify/log"
 )
 
 func main() {
@@ -15,11 +15,10 @@ func main() {
 		settingsFile = os.Args[1]
 	}
 
-	if err := config.LoadConfig(settingsFile); err != nil {
-		log.Fatal(err)
-	}
-
-	config.ConfigureLogger()
+	// Load config and initialise log
+	config.LoadConfig(settingsFile)
+	log.Init()
+	log.Info("Service starting...")
 
 	syncTicker := time.NewTicker(config.Polling.Sync)
 	notificationChannel := make(chan *Notification)
@@ -40,11 +39,11 @@ func initNotifications(notifications <-chan *Notification) {
 		// Stick it in the registered notifications store, excluding duplicates
 		inserted := AddNotification(*notification)
 		if !inserted {
-			log.Printf("DUP: %s (%s)", notification.Id, notification.Title)
+			log.Debug("DUP: %s (%s)", notification.Id, notification.Title)
 			continue
 		}
 
-		log.Printf("INIT: %s (%s)", notification.Id, notification.Title)
+		log.Info("INIT: %s (%s)", notification.Id, notification.Title)
 
 		diff := notification.Time.Sub(time.Now())
 		if diff > 0 {
@@ -60,7 +59,7 @@ func initNotifications(notifications <-chan *Notification) {
 			}()
 		} else {
 			// This shouldn't really happen as we only ask google for future events
-			log.Printf("OLD: %s (%s)", notification.Id, notification.Title)
+			log.Warning("OLD: %s (%s)", notification.Id, notification.Title)
 		}
 	}
 }
@@ -70,7 +69,7 @@ func loadNotifications(
 	notificationChannel chan *Notification,
 ) {
 	for {
-		log.Print("LOAD: Google calendar")
+		log.Notice("LOAD: Google calendar")
 		GetCalendar(notificationChannel)
 		_ = <-ticks
 	}
