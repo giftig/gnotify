@@ -6,8 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"xantoria.com/config"
-	"xantoria.com/gnotify"
+	"xantoria.com/gnotify/config"
 )
 
 func main() {
@@ -23,7 +22,7 @@ func main() {
 	config.ConfigureLogger()
 
 	syncTicker := time.NewTicker(config.Config.Polling.Sync)
-	notificationChannel := make(chan *gnotify.Notification)
+	notificationChannel := make(chan *Notification)
 
 	go initNotifications(notificationChannel)
 	loadNotifications(syncTicker.C, notificationChannel)
@@ -34,12 +33,12 @@ func main() {
  * them to the stored notifications and starting a timer to trigger their
  * display.
  */
-func initNotifications(notifications <-chan *gnotify.Notification) {
+func initNotifications(notifications <-chan *Notification) {
 	for {
 		notification := <-notifications
 
 		// Stick it in the registered notifications store, excluding duplicates
-		inserted := gnotify.AddNotification(*notification)
+		inserted := AddNotification(*notification)
 		if !inserted {
 			log.Printf("DUP: %s (%s)", notification.Id, notification.Title)
 			continue
@@ -68,11 +67,11 @@ func initNotifications(notifications <-chan *gnotify.Notification) {
 
 func loadNotifications(
 	ticks <-chan time.Time,
-	notificationChannel chan *gnotify.Notification,
+	notificationChannel chan *Notification,
 ) {
 	for {
 		log.Print("LOAD: Google calendar")
-		gnotify.GetCalendar(notificationChannel)
+		GetCalendar(notificationChannel)
 		_ = <-ticks
 	}
 }

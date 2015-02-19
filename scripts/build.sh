@@ -29,7 +29,7 @@ $ROOTPATH/scripts/dependencies.sh &> $cachefile
 check_status $?
 
 printf 'Compiling source...'
-GOPATH="$ROOTPATH" go install xantoria.com &> $cachefile
+GOPATH="$ROOTPATH" go install xantoria.com/gnotify &> $cachefile
 check_status $?
 
 finish 0

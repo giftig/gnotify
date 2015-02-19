@@ -1,4 +1,4 @@
-package gnotify
+package main
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 	"code.google.com/p/goauth2/oauth"
 	"github.com/skratchdot/open-golang/open"
 
-	"xantoria.com/config"
+	"xantoria.com/gnotify/config"
 )
 
 type CalendarEvents struct {

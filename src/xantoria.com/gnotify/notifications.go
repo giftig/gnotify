@@ -1,4 +1,4 @@
-package gnotify
+package main
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"time"
 
-	"xantoria.com/config"
+	"xantoria.com/gnotify/config"
 )
 
 type Notification struct {
