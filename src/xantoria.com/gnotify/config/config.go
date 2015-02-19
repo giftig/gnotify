@@ -9,59 +9,54 @@ import (
 	"gopkg.in/yaml.v1"
 )
 
-type YAMLConfig struct {
-	Auth    AuthConfig
-	Polling PollingConfig
-	Logging LoggingConfig
-
-	Notifications NotificationConfig
-	EventTypes    EventTypesConfig `yaml:"event_types"`
-
-	DatetimeFormat string `yaml:"datetime_format"`
-	DateFormat     string `yaml:"date_format"`
-}
-
-type LoggingConfig struct {
+type loggingConfig struct {
 	Type string
 	File string
 }
 
-type PollingConfig struct {
+type pollingConfig struct {
 	Sync time.Duration
 }
 
-type NotificationConfig struct {
-	NotifySend NotifySendConfig `yaml:"notify_send"`
+type notificationConfig struct {
+	NotifySend notifySendConfig `yaml:"notify_send"`
 }
-type NotifySendConfig struct {
+type notifySendConfig struct {
 	Duration time.Duration
 }
 
-type AuthConfig struct {
-	Google GoogleAuthConfig
+type authConfig struct {
+	Google googleAuthConfig
 }
-type GoogleAuthConfig struct {
+type googleAuthConfig struct {
 	ClientID      string `yaml:"client_id"`
 	Secret        string
 	AuthEndpoint  string `yaml:"auth_endpoint"`
 	TokenEndpoint string `yaml:"token_endpoint"`
 	RedirectURI   string `yaml:"redirect_uri"`
 	Scope         string
-	Account       GoogleAccountConfig
+	Account       googleAccountConfig
 }
-type GoogleAccountConfig struct {
+type googleAccountConfig struct {
 	Code       string
 	CalendarID string `yaml:"calendar_id"`
 }
 
-type EventTypesConfig struct {
-	Calendar CalendarEventConfig
+type eventTypeConfig struct {
+	Calendar calendarEventConfig
 }
-type CalendarEventConfig struct {
+type calendarEventConfig struct {
 	Icon, Label string
 }
 
-var Config YAMLConfig
+// Top-level config params
+var Auth authConfig
+var Polling pollingConfig
+var Logging loggingConfig
+var Notifications notificationConfig
+var EventTypes eventTypeConfig
+var DatetimeFormat string
+var DateFormat string
 
 /**
  * Load config from the given file and stick it into Config
@@ -72,29 +67,47 @@ func LoadConfig(file string) error {
 		return err
 	}
 
-	return yaml.Unmarshal(data, &Config)
+	// Unmarshal the config directly into package-level structs for each section
+	cfg := struct {
+		Auth           *authConfig
+		Polling        *pollingConfig
+		Logging        *loggingConfig
+		Notifications  *notificationConfig
+		EventTypes     *eventTypeConfig
+		DatetimeFormat *string
+		DateFormat     *string
+	}{
+		Auth:           &Auth,
+		Polling:        &Polling,
+		Logging:        &Logging,
+		Notifications:  &Notifications,
+		EventTypes:     &EventTypes,
+		DatetimeFormat: &DatetimeFormat,
+		DateFormat:     &DateFormat,
+	}
+
+	return yaml.Unmarshal(data, &cfg)
 }
 
 /**
  * Configure the Logger based on logging config
  */
 func ConfigureLogger() {
-	loggerConfig := Config.Logging
-	if loggerConfig.Type == "" {
-		loggerConfig = LoggingConfig{"console", ""}
+	if Logging.Type == "" {
+		Logging = loggingConfig{"console", ""}
 	}
 
-	switch loggerConfig.Type {
+	switch Logging.Type {
 	case "console":
 		break // Console is the default logging configuration anyway
 	case "file":
 		f, err := os.OpenFile(
-			loggerConfig.File,
+			Logging.File,
 			os.O_RDWR|os.O_CREATE|os.O_APPEND,
 			0644,
 		)
 		if err != nil {
-			log.Fatalf("The logfile %s could not be accessed", loggerConfig.File)
+			log.Fatalf("The logfile %s could not be accessed", Logging.File)
 		}
 		log.SetOutput(f)
 	}

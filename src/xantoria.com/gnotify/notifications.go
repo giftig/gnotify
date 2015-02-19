@@ -28,7 +28,7 @@ func (notification *Notification) Display() (err error) {
 	cmd := exec.Command(
 		"/usr/bin/notify-send",
 		"-i", notification.Icon,
-		"-t", fmt.Sprintf("%d", config.Config.Notifications.NotifySend.Duration/time.Millisecond),
+		"-t", fmt.Sprintf("%d", config.Notifications.NotifySend.Duration/time.Millisecond),
 		notification.Title,
 		notification.Message,
 	)

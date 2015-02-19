@@ -21,7 +21,7 @@ func main() {
 
 	config.ConfigureLogger()
 
-	syncTicker := time.NewTicker(config.Config.Polling.Sync)
+	syncTicker := time.NewTicker(config.Polling.Sync)
 	notificationChannel := make(chan *Notification)
 
 	go initNotifications(notificationChannel)

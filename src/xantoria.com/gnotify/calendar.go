@@ -28,7 +28,7 @@ type CalendarDate struct {
 }
 
 func authenticate() (transport *oauth.Transport) {
-	googleConfig := config.Config.Auth.Google
+	googleConfig := config.Auth.Google
 	code := googleConfig.Account.Code
 
 	// Configure and create the OAuth Transport
@@ -67,7 +67,7 @@ func authenticate() (transport *oauth.Transport) {
  */
 func GetCalendar(notifications chan *Notification) {
 	transport := authenticate()
-	now := url.QueryEscape(time.Now().Format(config.Config.DatetimeFormat))
+	now := url.QueryEscape(time.Now().Format(config.DatetimeFormat))
 
 	// Get future events
 	r, err := transport.Client().Get(fmt.Sprintf(
@@ -76,7 +76,7 @@ func GetCalendar(notifications chan *Notification) {
 			"maxAttendees=1&"+
 			"timeMin=%s&"+
 			"timeZone=UTC",
-		config.Config.Auth.Google.Account.CalendarID,
+		config.Auth.Google.Account.CalendarID,
 		now,
 	))
 	if err != nil {
@@ -97,10 +97,10 @@ func GetCalendar(notifications chan *Notification) {
 		var rawTime, timeFormat string
 		if event.Start.Datetime != "" {
 			rawTime = event.Start.Datetime
-			timeFormat = config.Config.DatetimeFormat
+			timeFormat = config.DatetimeFormat
 		} else {
 			rawTime = event.Start.Date
-			timeFormat = config.Config.DateFormat
+			timeFormat = config.DateFormat
 		}
 
 		eventTime, err := time.Parse(timeFormat, rawTime)
@@ -111,8 +111,8 @@ func GetCalendar(notifications chan *Notification) {
 		notif := Notification{
 			Title:    "Calendar event",
 			Message:  event.Summary,
-			Icon:     config.Config.EventTypes.Calendar.Icon,
-			Source:   config.Config.EventTypes.Calendar.Label,
+			Icon:     config.EventTypes.Calendar.Icon,
+			Source:   config.EventTypes.Calendar.Label,
 			Id:       event.Id,
 			Time:     eventTime,
 			Complete: event.Status == "complete",
