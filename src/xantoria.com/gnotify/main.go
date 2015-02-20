@@ -7,6 +7,8 @@ import (
 
 	"xantoria.com/gnotify/config"
 	"xantoria.com/gnotify/log"
+	"xantoria.com/gnotify/notifier"
+	"xantoria.com/gnotify/sources/calendar"
 )
 
 func main() {
@@ -21,56 +23,13 @@ func main() {
 	log.Info("Service starting...")
 
 	syncTicker := time.NewTicker(config.Polling.Sync)
-	notificationChannel := make(chan *Notification)
+	notificationC := make(chan *notifier.Notification)
 
-	go initNotifications(notificationChannel)
-	loadNotifications(syncTicker.C, notificationChannel)
-}
+	// Bring up a goroutine to set up notifications as it receives them
+	go notifier.InitNotifications(notificationC)
 
-/**
- * Wait for notifications on the given channel and initialise them, adding
- * them to the stored notifications and starting a timer to trigger their
- * display.
- */
-func initNotifications(notifications <-chan *Notification) {
-	for {
-		notification := <-notifications
-
-		// Stick it in the registered notifications store, excluding duplicates
-		inserted := AddNotification(*notification)
-		if !inserted {
-			log.Debug("DUP: %s (%s)", notification.Id, notification.Title)
-			continue
-		}
-
-		log.Info("INIT: %s (%s)", notification.Id, notification.Title)
-
-		diff := notification.Time.Sub(time.Now())
-		if diff > 0 {
-			timer := time.NewTimer(diff)
-			go func() {
-				_ = <-timer.C
-				err := notification.Display()
-				if err == nil {
-					// TODO: This doesn't actually do anything until they're actually
-					// TODO: organised and properly synced with a local datastore.
-					notification.Complete = true
-				}
-			}()
-		} else {
-			// This shouldn't really happen as we only ask google for future events
-			log.Warning("OLD: %s (%s)", notification.Id, notification.Title)
-		}
-	}
-}
-
-func loadNotifications(
-	ticks <-chan time.Time,
-	notificationChannel chan *Notification,
-) {
-	for {
-		log.Notice("LOAD: Google calendar")
-		GetCalendar(notificationChannel)
-		_ = <-ticks
-	}
+	// Load events from the calendar whenever syncTicker ticks (configurable)
+	// FIXME: This should be a goroutine too, but we have to do something in this thread or the
+	//			  program will simply exit. This should be handled better.
+	calendar.LoadEvents(syncTicker.C, notificationC)
 }

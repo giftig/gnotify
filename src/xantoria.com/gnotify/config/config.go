@@ -74,9 +74,9 @@ func LoadConfig(file string) {
 		Polling        *pollingConfig
 		Logging        *loggingConfig
 		Notifications  *notificationConfig
-		EventTypes     *eventTypeConfig
-		DatetimeFormat *string
-		DateFormat     *string
+		EventTypes     *eventTypeConfig `yaml:"event_types"`
+		DatetimeFormat *string          `yaml:"datetime_format"`
+		DateFormat     *string          `yaml:"date_format"`
 	}{
 		Auth:           &Auth,
 		Polling:        &Polling,
