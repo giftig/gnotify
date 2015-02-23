@@ -12,6 +12,7 @@ type Notification struct {
 	Priority             int
 	Time                 time.Time
 	Complete             bool
+	Recipient            string
 }
 
 // Priority levels
@@ -49,7 +50,7 @@ func InitNotifications(notifications <-chan *Notification) {
 			continue
 		}
 
-		// Check if it's expired, too
+		// Check if it's expired
 		diff := notif.Time.Sub(time.Now())
 		if diff <= 0 {
 			log.Debug("Ignoring expired notification %s (%s)", notif.Id, notif.Title)
@@ -57,11 +58,6 @@ func InitNotifications(notifications <-chan *Notification) {
 		}
 		log.Info("Storing notification %s (%s)", notif.Id, notif.Title)
 
-		// Now create a timer which displays the notification at the correct time
-		timer := time.NewTimer(diff)
-		go func() {
-			_ = <-timer.C
-			notif.Display(NotifySend)
-		}()
+		notif.Deliver()
 	}
 }

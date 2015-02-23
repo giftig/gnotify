@@ -14,6 +14,37 @@ const (
 	NotifySend = iota
 )
 
+// Deliver takes a notification and sets it up to be displayed at the right time if we're the
+// correct recipient, and routes it to the right recipient if we are aware of one
+func (notif *Notification) Deliver() {
+
+	// Figure out if we're the intended recipient of this notification
+	shouldDisplay := notif.Recipient == "" || notif.Recipient == config.Routing.RecipientID
+	if !shouldDisplay {
+		for _, group := range config.Routing.Groups {
+			if group == notif.Recipient {
+				shouldDisplay = true
+				break
+			}
+		}
+	}
+
+	// Create a timer which displays the notification at the correct time if not expired
+	diff := notif.Time.Sub(time.Now())
+	if diff <= 0 {
+		log.Debug("Ignoring expired notification %s (%s)", notif.Id, notif.Title)
+	} else if shouldDisplay {
+		timer := time.NewTimer(diff)
+		go func() {
+			_ = <-timer.C
+			notif.Display(NotifySend)
+		}()
+	}
+
+	// TODO: Check here if we know anything about the intended recipients and pass it on
+	//       May need to take a flag argument to this method to prevent propagation loops
+}
+
 // Display displays the notification to the user
 func (notif *Notification) Display(route int) {
 	log.Debug("Displaying notification %s (%s) via method %d", notif.Id, notif.Title, route)

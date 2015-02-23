@@ -54,6 +54,17 @@ type staticConfig struct {
 	IconPath string `yaml:"icon_path"`
 }
 
+// Identifies an endpoint on which to inform a named recipient of a message
+type recipientConfig struct {
+	ID       string `yaml:"id"`
+	Endpoint string `yaml:"endpoint"`
+}
+type routingConfig struct {
+	RecipientID     string            `yaml:"recipient_id"`
+	Groups          []string          `yaml:"recipient_groups"`
+	KnownRecipients []recipientConfig `yaml:"known_recipients"`
+}
+
 // Top-level config params
 var Auth authConfig
 var Polling pollingConfig
@@ -63,6 +74,7 @@ var Static staticConfig
 var EventTypes eventTypeConfig
 var DatetimeFormat string
 var DateFormat string
+var Routing routingConfig
 
 /**
  * Load config from the given file and stick it into Config
@@ -84,6 +96,7 @@ func LoadConfig(file string) {
 		DatetimeFormat *string          `yaml:"datetime_format"`
 		DateFormat     *string          `yaml:"date_format"`
 		Static         *staticConfig
+		Routing        *routingConfig
 	}{
 		Auth:           &Auth,
 		Polling:        &Polling,
@@ -93,6 +106,7 @@ func LoadConfig(file string) {
 		DatetimeFormat: &DatetimeFormat,
 		DateFormat:     &DateFormat,
 		Static:         &Static,
+		Routing:        &Routing,
 	}
 
 	if err = yaml.Unmarshal(data, &cfg); err != nil {
