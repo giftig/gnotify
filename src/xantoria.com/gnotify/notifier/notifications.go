@@ -40,28 +40,28 @@ func AddNotification(notification Notification) bool {
 // them to the stored notifications and starting a timer to trigger their display at the right time
 func InitNotifications(notifications <-chan *Notification) {
 	for {
-		notification := <-notifications
+		notif := <-notifications
 
 		// Stick it in the registered notifications store, excluding duplicates
-		inserted := AddNotification(*notification)
+		inserted := AddNotification(*notif)
 		if !inserted {
-			log.Debug("Ignored duplicate notification %s (%s)", notification.Id, notification.Title)
+			log.Debug("Ignoring duplicate notification %s (%s)", notif.Id, notif.Title)
 			continue
 		}
 
-		log.Info("Storing notification %s (%s)", notification.Id, notification.Title)
-
-		diff := notification.Time.Sub(time.Now())
-		if diff > 0 {
-			timer := time.NewTimer(diff)
-			go func() {
-				_ = <-timer.C
-				notification.Display(NotifySend)
-			}()
-		} else {
-			// This shouldn't really happen as we only ask google for future events
-			// That's specific to google calendar notifications, of course.
-			log.Warning("Notification %s (%s) has expired already", notification.Id, notification.Title)
+		// Check if it's expired, too
+		diff := notif.Time.Sub(time.Now())
+		if diff <= 0 {
+			log.Debug("Ignoring expired notification %s (%s)", notif.Id, notif.Title)
+			continue
 		}
+		log.Info("Storing notification %s (%s)", notif.Id, notif.Title)
+
+		// Now create a timer which displays the notification at the correct time
+		timer := time.NewTimer(diff)
+		go func() {
+			_ = <-timer.C
+			notif.Display(NotifySend)
+		}()
 	}
 }
