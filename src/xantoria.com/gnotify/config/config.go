@@ -50,11 +50,16 @@ type calendarEventConfig struct {
 	Icon, Label string
 }
 
+type staticConfig struct {
+	IconPath string `yaml:"icon_path"`
+}
+
 // Top-level config params
 var Auth authConfig
 var Polling pollingConfig
 var Logging loggingConfig
 var Notifications notificationConfig
+var Static staticConfig
 var EventTypes eventTypeConfig
 var DatetimeFormat string
 var DateFormat string
@@ -74,9 +79,11 @@ func LoadConfig(file string) {
 		Polling        *pollingConfig
 		Logging        *loggingConfig
 		Notifications  *notificationConfig
+		StaticConfig   *staticConfig
 		EventTypes     *eventTypeConfig `yaml:"event_types"`
 		DatetimeFormat *string          `yaml:"datetime_format"`
 		DateFormat     *string          `yaml:"date_format"`
+		Static         *staticConfig
 	}{
 		Auth:           &Auth,
 		Polling:        &Polling,
@@ -85,6 +92,7 @@ func LoadConfig(file string) {
 		EventTypes:     &EventTypes,
 		DatetimeFormat: &DatetimeFormat,
 		DateFormat:     &DateFormat,
+		Static:         &Static,
 	}
 
 	if err = yaml.Unmarshal(data, &cfg); err != nil {

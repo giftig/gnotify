@@ -20,7 +20,7 @@ func main() {
 	// Load config and initialise log
 	config.LoadConfig(settingsFile)
 	log.Init()
-	log.Info("Service starting...")
+	log.Notice("Service starting...")
 
 	syncTicker := time.NewTicker(config.Polling.Sync)
 	notificationC := make(chan *notifier.Notification)
