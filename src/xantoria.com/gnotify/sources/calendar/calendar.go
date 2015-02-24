@@ -89,6 +89,7 @@ func GetCalendar(notifs chan *notifier.Notification) {
 	r, err := transport.Client().Get(url)
 	if err != nil {
 		log.Fatal("Request failed: ", err)
+		return
 	}
 	defer r.Body.Close()
 
