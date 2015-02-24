@@ -31,7 +31,7 @@ type CalendarDate struct {
 
 // authenticate auths the service with google via OAuth
 func authenticate() (transport *oauth.Transport) {
-	googleConfig := config.Auth.Google
+	googleConfig := config.Sources.Calendar.Auth
 	code := googleConfig.Account.Code
 
 	// Configure and create the OAuth Transport
@@ -69,11 +69,11 @@ func authenticate() (transport *oauth.Transport) {
 func GetCalendar(notifs chan *notifier.Notification) {
 	log.Notice(
 		"Fetching calendar and caching notifications (calendar %s)",
-		config.Auth.Google.Account.CalendarID,
+		config.Sources.Calendar.Auth.Account.CalendarID,
 	)
 
 	transport := authenticate()
-	now := url.QueryEscape(time.Now().Format(config.DatetimeFormat))
+	now := url.QueryEscape(time.Now().Format(config.Sources.Calendar.DatetimeFormat))
 
 	// Get future events
 	r, err := transport.Client().Get(fmt.Sprintf(
@@ -82,7 +82,7 @@ func GetCalendar(notifs chan *notifier.Notification) {
 			"maxAttendees=1&"+
 			"timeMin=%s&"+
 			"timeZone=UTC",
-		config.Auth.Google.Account.CalendarID,
+		config.Sources.Calendar.Auth.Account.CalendarID,
 		now,
 	))
 	if err != nil {
@@ -102,7 +102,7 @@ func GetCalendar(notifs chan *notifier.Notification) {
 				"maxAttendees=1&"+
 				"timeMin=%s&"+
 				"timeZone=UTC",
-			config.Auth.Google.Account.CalendarID,
+			config.Sources.Calendar.Auth.Account.CalendarID,
 			now,
 		),
 	)
@@ -117,10 +117,10 @@ func GetCalendar(notifs chan *notifier.Notification) {
 		var rawTime, timeFormat string
 		if event.Start.Datetime != "" {
 			rawTime = event.Start.Datetime
-			timeFormat = config.DatetimeFormat
+			timeFormat = config.Sources.Calendar.DatetimeFormat
 		} else {
 			rawTime = event.Start.Date
-			timeFormat = config.DateFormat
+			timeFormat = config.Sources.Calendar.DateFormat
 		}
 
 		eventTime, err := time.Parse(timeFormat, rawTime)
@@ -143,10 +143,12 @@ func GetCalendar(notifs chan *notifier.Notification) {
 	}
 }
 
-func LoadEvents(
-	ticks <-chan time.Time,
-	notificationChannel chan *notifier.Notification,
-) {
+// LoadEvents starts a ticker using the poll period in the config, and syncs our local events
+// with the calendar periodically.
+func LoadEvents(notificationChannel chan *notifier.Notification) {
+	syncTicker := time.NewTicker(config.Sources.Calendar.Polling.Sync)
+	ticks := syncTicker.C
+
 	for {
 		GetCalendar(notificationChannel)
 		_ = <-ticks

@@ -50,12 +50,6 @@ func InitNotifications(notifications <-chan *Notification) {
 			continue
 		}
 
-		// Check if it's expired
-		diff := notif.Time.Sub(time.Now())
-		if diff <= 0 {
-			log.Debug("Ignoring expired notification %s (%s)", notif.Id, notif.Title)
-			continue
-		}
 		log.Info("Storing notification %s (%s)", notif.Id, notif.Title)
 
 		notif.Deliver()

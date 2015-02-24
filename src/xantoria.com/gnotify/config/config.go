@@ -15,8 +15,30 @@ type loggingConfig struct {
 	Formatter string `yaml:"formatter"`
 }
 
-type pollingConfig struct {
-	Sync time.Duration
+type sourceConfig struct {
+	Rest struct {
+		Host string
+		Port int
+	}
+	Calendar struct {
+		DatetimeFormat string
+		DateFormat     string
+		Polling        struct {
+			Sync time.Duration
+		}
+		Auth struct {
+			ClientID      string `yaml:"client_id"`
+			Secret        string
+			AuthEndpoint  string `yaml:"auth_endpoint"`
+			TokenEndpoint string `yaml:"token_endpoint"`
+			RedirectURI   string `yaml:"redirect_uri"`
+			Scope         string
+			Account       struct {
+				Code       string
+				CalendarID string `yaml:"calendar_id"`
+			}
+		}
+	}
 }
 
 type notificationConfig struct {
@@ -24,23 +46,6 @@ type notificationConfig struct {
 }
 type notifySendConfig struct {
 	Duration time.Duration
-}
-
-type authConfig struct {
-	Google googleAuthConfig
-}
-type googleAuthConfig struct {
-	ClientID      string `yaml:"client_id"`
-	Secret        string
-	AuthEndpoint  string `yaml:"auth_endpoint"`
-	TokenEndpoint string `yaml:"token_endpoint"`
-	RedirectURI   string `yaml:"redirect_uri"`
-	Scope         string
-	Account       googleAccountConfig
-}
-type googleAccountConfig struct {
-	Code       string
-	CalendarID string `yaml:"calendar_id"`
 }
 
 type eventTypeConfig struct {
@@ -66,14 +71,11 @@ type routingConfig struct {
 }
 
 // Top-level config params
-var Auth authConfig
-var Polling pollingConfig
 var Logging loggingConfig
+var Sources sourceConfig
 var Notifications notificationConfig
 var Static staticConfig
 var EventTypes eventTypeConfig
-var DatetimeFormat string
-var DateFormat string
 var Routing routingConfig
 
 /**
@@ -87,26 +89,20 @@ func LoadConfig(file string) {
 
 	// Unmarshal the config directly into package-level structs for each section
 	cfg := struct {
-		Auth           *authConfig
-		Polling        *pollingConfig
-		Logging        *loggingConfig
-		Notifications  *notificationConfig
-		StaticConfig   *staticConfig
-		EventTypes     *eventTypeConfig `yaml:"event_types"`
-		DatetimeFormat *string          `yaml:"datetime_format"`
-		DateFormat     *string          `yaml:"date_format"`
-		Static         *staticConfig
-		Routing        *routingConfig
+		Logging       *loggingConfig
+		Sources       *sourceConfig
+		Notifications *notificationConfig
+		StaticConfig  *staticConfig
+		EventTypes    *eventTypeConfig `yaml:"event_types"`
+		Static        *staticConfig
+		Routing       *routingConfig
 	}{
-		Auth:           &Auth,
-		Polling:        &Polling,
-		Logging:        &Logging,
-		Notifications:  &Notifications,
-		EventTypes:     &EventTypes,
-		DatetimeFormat: &DatetimeFormat,
-		DateFormat:     &DateFormat,
-		Static:         &Static,
-		Routing:        &Routing,
+		Logging:       &Logging,
+		Sources:       &Sources,
+		Notifications: &Notifications,
+		EventTypes:    &EventTypes,
+		Static:        &Static,
+		Routing:       &Routing,
 	}
 
 	if err = yaml.Unmarshal(data, &cfg); err != nil {
