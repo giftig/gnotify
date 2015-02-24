@@ -76,7 +76,7 @@ func GetCalendar(notifs chan *notifier.Notification) {
 	now := url.QueryEscape(time.Now().Format(config.Sources.Calendar.DatetimeFormat))
 
 	// Get future events
-	r, err := transport.Client().Get(fmt.Sprintf(
+	url := fmt.Sprintf(
 		"https://www.googleapis.com/calendar/v3/calendars/%s/events?"+
 			"alwaysIncludeEmail=false&"+
 			"maxAttendees=1&"+
@@ -84,7 +84,9 @@ func GetCalendar(notifs chan *notifier.Notification) {
 			"timeZone=UTC",
 		config.Sources.Calendar.Auth.Account.CalendarID,
 		now,
-	))
+	)
+
+	r, err := transport.Client().Get(url)
 	if err != nil {
 		log.Fatal("Request failed: ", err)
 	}
@@ -94,18 +96,7 @@ func GetCalendar(notifs chan *notifier.Notification) {
 	if err != nil {
 		log.Error("Error reading response body: %v", err)
 	}
-	log.Debug(
-		"REQUEST: %s",
-		fmt.Sprintf(
-			"https://www.googleapis.com/calendar/v3/calendars/%s/events?"+
-				"alwaysIncludeEmail=false&"+
-				"maxAttendees=1&"+
-				"timeMin=%s&"+
-				"timeZone=UTC",
-			config.Sources.Calendar.Auth.Account.CalendarID,
-			now,
-		),
-	)
+	log.Debug("Syncing calendar: %s", url)
 
 	var data CalendarEvents
 	json.Unmarshal(responseText, &data)
