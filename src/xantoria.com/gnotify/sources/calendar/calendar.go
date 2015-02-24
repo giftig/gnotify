@@ -67,13 +67,11 @@ func authenticate() (transport *oauth.Transport) {
 // GetCalendar connects to google calendar, synchronises notifications based on the calendar
 // contents, and pushes new notifications to the provided channel
 func GetCalendar(notifs chan *notifier.Notification) {
-	log.Notice(
-		"Fetching calendar and caching notifications (calendar %s)",
-		config.Sources.Calendar.Auth.Account.CalendarID,
-	)
+	conf := config.Sources.Calendar
+	log.Info("Fetching events (calendar %s)", conf.Auth.Account.CalendarID)
 
 	transport := authenticate()
-	now := url.QueryEscape(time.Now().Format(config.Sources.Calendar.DatetimeFormat))
+	now := url.QueryEscape(time.Now().Format(conf.DatetimeFormat))
 
 	// Get future events
 	url := fmt.Sprintf(
@@ -82,7 +80,7 @@ func GetCalendar(notifs chan *notifier.Notification) {
 			"maxAttendees=1&"+
 			"timeMin=%s&"+
 			"timeZone=UTC",
-		config.Sources.Calendar.Auth.Account.CalendarID,
+		conf.Auth.Account.CalendarID,
 		now,
 	)
 
@@ -97,7 +95,7 @@ func GetCalendar(notifs chan *notifier.Notification) {
 	if err != nil {
 		log.Error("Error reading response body: %v", err)
 	}
-	log.Debug("Syncing calendar: %s", url)
+	log.Debug("Called %s", url)
 
 	var data CalendarEvents
 	json.Unmarshal(responseText, &data)
@@ -111,10 +109,10 @@ func GetCalendar(notifs chan *notifier.Notification) {
 		var rawTime, timeFormat string
 		if event.Start.Datetime != "" {
 			rawTime = event.Start.Datetime
-			timeFormat = config.Sources.Calendar.DatetimeFormat
+			timeFormat = conf.DatetimeFormat
 		} else {
 			rawTime = event.Start.Date
-			timeFormat = config.Sources.Calendar.DateFormat
+			timeFormat = conf.DateFormat
 		}
 
 		eventTime, err := time.Parse(timeFormat, rawTime)
@@ -140,7 +138,14 @@ func GetCalendar(notifs chan *notifier.Notification) {
 // LoadEvents starts a ticker using the poll period in the config, and syncs our local events
 // with the calendar periodically.
 func LoadEvents(notificationChannel chan *notifier.Notification) {
-	syncTicker := time.NewTicker(config.Sources.Calendar.Polling.Sync)
+	conf := config.Sources.Calendar
+	log.Notice(
+		"Polling for calendar events every %s (calendar %s)",
+		conf.Polling.Sync,
+		conf.Auth.Account.CalendarID,
+	)
+
+	syncTicker := time.NewTicker(conf.Polling.Sync)
 	ticks := syncTicker.C
 
 	for {
