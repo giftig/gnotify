@@ -110,7 +110,9 @@ func GetCalendar(notifs chan *notifier.Notification) {
 	var data CalendarEvents
 	json.Unmarshal(responseText, &data)
 
-	log.Info("Retrieved %d events", len(data.Items))
+	if numEvents := len(data.Items); numEvents > 0 {
+		log.Info("Retrieved %d events", len(data.Items))
+	}
 
 	for _, event := range data.Items {
 		// Detect date or datetime fields for the event and pick the right format to parse
