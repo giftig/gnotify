@@ -32,7 +32,7 @@ func (notif *Notification) Deliver() {
 	// Create a timer which displays the notification at the correct time if not expired
 	diff := notif.Time.Sub(time.Now())
 	if diff <= 0 {
-		log.Debug("Ignoring expired notification %s (%s)", notif.Id, notif.Title)
+		log.Info("Ignoring expired notification \"%s\" (%s)", notif.Id, notif.Title)
 	} else if shouldDisplay {
 		timer := time.NewTimer(diff)
 		go func() {
