@@ -1,0 +1,10 @@
+{
+  "id": "{{ id }}",
+  "title": "{{ title }}",
+  "message": "{{ message }}",
+  "priority": 10,
+  "recipient": "giftig",
+  "complete": false,
+  "time": "{{ time }}"
+}
+

@@ -1,0 +1,34 @@
+#!/bin/bash
+
+DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+TEMPLATE="$DIR/notification.json"
+URL='http://localhost:6666/notify/trigger/'
+
+if [[ "$1" == "" || "$2" == "" ]]; then
+  echo 'Usage: notify title message [id]'
+  exit 1
+fi
+
+title="$1"
+msg="$2"
+
+if [[ "$3" != "" ]]; then
+  id="$3"
+else
+  id="$RANDOM"
+fi
+
+tmp="$(mktemp /tmp/gnotify-tests.XXXXXX)"
+sed -E \
+  -e "s|\{\{ id \}\}|$id|g" \
+  -e "s|\{\{ title \}\}|$title|g" \
+  -e "s|\{\{ message \}\}|$msg|g" \
+  -e "s|\{\{ time \}\}|$(date --utc +'%Y-%m-%dT%H:%M:59Z')|g" \
+  $TEMPLATE > $tmp
+
+curl \
+  -X POST \
+  -H 'Content-Type: application/json' \
+  -d "@$tmp" \
+  "$URL" \
+  -D -
