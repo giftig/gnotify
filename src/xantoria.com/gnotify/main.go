@@ -9,6 +9,7 @@ import (
 	"xantoria.com/gnotify/notifier"
 	"xantoria.com/gnotify/sources/calendar"
 	"xantoria.com/gnotify/sources/rest"
+	"xantoria.com/gnotify/sources/todo"
 )
 
 func main() {
@@ -29,6 +30,9 @@ func main() {
 
 	// Load events from the calendar whenever syncTicker ticks (configurable)
 	go calendar.LoadEvents(notificationC)
+
+	// Load events from the configured to-do list
+	go todo.LoadEvents(notificationC)
 
 	// Listen for routed or freshly-triggered events over REST
 	rest.Listen(notificationC)

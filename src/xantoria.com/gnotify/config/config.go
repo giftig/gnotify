@@ -39,6 +39,9 @@ type sourceConfig struct {
 			}
 		}
 	}
+	Todo struct {
+		File string
+	}
 }
 
 type notificationConfig struct {
@@ -49,9 +52,10 @@ type notifySendConfig struct {
 }
 
 type eventTypeConfig struct {
-	Calendar calendarEventConfig
+	Calendar basicEventConfig
+	Todo     basicEventConfig
 }
-type calendarEventConfig struct {
+type basicEventConfig struct {
 	Icon, Label string
 }
 
