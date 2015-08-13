@@ -74,6 +74,15 @@ type routingConfig struct {
 	KnownRecipients []recipientConfig `yaml:"known_recipients"`
 }
 
+type persistenceConfig struct {
+	Couch struct {
+		Host string
+		Port int
+		Db   string
+	}
+	Persist bool
+}
+
 // Top-level config params
 var Logging loggingConfig
 var Sources sourceConfig
@@ -81,6 +90,7 @@ var Notifications notificationConfig
 var Static staticConfig
 var EventTypes eventTypeConfig
 var Routing routingConfig
+var Persistence persistenceConfig
 
 /**
  * Load config from the given file and stick it into Config
@@ -100,6 +110,7 @@ func LoadConfig(file string) {
 		EventTypes    *eventTypeConfig `yaml:"event_types"`
 		Static        *staticConfig
 		Routing       *routingConfig
+		Persistence   *persistenceConfig
 	}{
 		Logging:       &Logging,
 		Sources:       &Sources,
@@ -107,6 +118,7 @@ func LoadConfig(file string) {
 		EventTypes:    &EventTypes,
 		Static:        &Static,
 		Routing:       &Routing,
+		Persistence:   &Persistence,
 	}
 
 	if err = yaml.Unmarshal(data, &cfg); err != nil {

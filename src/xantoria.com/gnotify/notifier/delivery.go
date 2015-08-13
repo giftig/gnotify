@@ -48,6 +48,7 @@ func (notif *Notification) Deliver() {
 // Display displays the notification to the user
 func (notif *Notification) Display(route int) {
 	log.Debug("Displaying notification %s (%s) via method %d", notif.Id, notif.Title, route)
+	notif.Save()
 
 	switch route {
 	case NotifySend:
