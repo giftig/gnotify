@@ -1,8 +1,11 @@
 routing:
-  recipient_id: giftig-server
+  recipient_id: giftig-client
   known_recipients: [
-    {id: giftig-client, host: localhost, port: 6667}
+    {id: giftig-client, host: localhost, port: 6666}
   ]
+  master:
+    host: localhost
+    port: 6666
 
 logging:
   type: console
@@ -12,7 +15,7 @@ logging:
 sources:
   rest:
     host: localhost
-    port: 6666
+    port: 6667
 
   calendar:
     auth:
@@ -48,8 +51,19 @@ sources:
     file: /home/giftiger_wunsch/Documents/todo.txt
 
 persistence:
-  couch:
-    host: localhost
-    port: 5984
-    db: gnotify_events
-  persist: true
+  persist: false
+
+notifications:
+  notify_send:
+    duration: 1m
+
+event_types:
+  calendar:
+    icon: calendar.png
+    label: google-calendar
+  todo:
+    icon: calendar.png  # Should change this to a checklist icon or something
+    label: todo-list
+
+static:
+  icon_path: /home/giftiger_wunsch/Code/local/private-projects/gnotify/share/gnotify/icons

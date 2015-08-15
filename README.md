@@ -40,11 +40,12 @@ triggering notifications:
   * POSTing to /notify/route/ is designed to be internal to the application and
     represents a notification triggered elsewhere and passed to this node
 
-The difference between the endpoints is the former tells the application it
-may need to pass the notification on to another node it recognises as being
-the destination, whereas the latter suggests the notifying node believes we are
-the destination and it shouldn't pass it on - this prevents loops if two
-nodes believe each other are the correct destination for some reason.
+The main difference between these endpoints is that the former marks the
+notification as being a newly-triggered event, which is of type "API", and it
+may be another application hitting the endpoint. The latter indicates that another
+node is passing on the event, and that it either believes the receiver to be the
+correct destination, or else it considers the receiver to be an authority on
+how to deliver it to the correct destination.
 
 Notifications should be `POST` requests with content type `application/json`
 matching the following format:
@@ -58,6 +59,12 @@ matching the following format:
       "complete": false,
       "time": "2000-01-01T00:00:00Z"
     }
+
+To check for recent notifications, a non-master node will make a GET request to
+the `/notify/fetch/` endpoint to retrieve a list of recent notifications.
+This will return an array of notifications matching the format described above,
+or will redirect to the correct master if the wrong node is asked. The
+destination for which to query is described by the "dest" query parameter.
 
 ---
 

@@ -64,14 +64,20 @@ type staticConfig struct {
 }
 
 // Identifies an endpoint on which to inform a named recipient of a message
+// FIXME: Refactor to be inline for consistency
 type recipientConfig struct {
-	ID       string `yaml:"id"`
-	Endpoint string `yaml:"endpoint"`
+	ID   string `yaml:"id"`
+	Host string
+	Port int
 }
 type routingConfig struct {
 	RecipientID     string            `yaml:"recipient_id"`
 	Groups          []string          `yaml:"recipient_groups"`
 	KnownRecipients []recipientConfig `yaml:"known_recipients"`
+	Master          struct {
+		Host string
+		Port int
+	}
 }
 
 type persistenceConfig struct {
@@ -123,5 +129,9 @@ func LoadConfig(file string) {
 
 	if err = yaml.Unmarshal(data, &cfg); err != nil {
 		log.Fatalf("Error parsing config file: %v", err)
+	}
+
+	if !Persistence.Persist && Routing.Master.Host == "" {
+		log.Fatalf("Improperly configured: cannot be a master node but not be db-backed.")
 	}
 }
