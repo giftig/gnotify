@@ -7,12 +7,18 @@ import (
 )
 
 type Notification struct {
-	Title, Message, Icon string
-	Source, Id           string
-	Priority             int
-	Time                 time.Time
-	Complete             bool
-	Recipient            string
+	Title     string `json:"title"`
+	Message   string `json:"message"`
+	Recipient string `json:"recipient"`
+
+	Id     string `json:"id"`
+	Source string `json:"source"`
+
+	Priority int    `json:"priority"`
+	Icon     string `json:"icon"`
+
+	Time     time.Time `json:"time"`
+	Complete bool      `json:"complete"`
 }
 
 // Priority levels
@@ -51,6 +57,7 @@ func InitNotifications(notifications <-chan *Notification) {
 		}
 
 		log.Info("Storing notification \"%s\" (%s)", notif.Id, notif.Title)
+		notif.Save()
 
 		notif.Deliver()
 	}

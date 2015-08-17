@@ -5,7 +5,7 @@ TEMPLATE="$DIR/notification.json"
 URL='http://localhost:6666/notify/trigger/'
 
 if [[ "$1" == "" || "$2" == "" ]]; then
-  echo 'Usage: notify title message [id]'
+  echo 'Usage: notify title message [id] [recipient]'
   exit 1
 fi
 
@@ -18,12 +18,19 @@ else
   id="$RANDOM"
 fi
 
+if [[ "$4" != "" ]]; then
+  recipient="$4"
+else
+  recipient='giftig-client'
+fi
+
 tmp="$(mktemp /tmp/gnotify-tests.XXXXXX)"
 sed -E \
   -e "s|\{\{ id \}\}|$id|g" \
   -e "s|\{\{ title \}\}|$title|g" \
   -e "s|\{\{ message \}\}|$msg|g" \
   -e "s|\{\{ time \}\}|$(date --utc +'%Y-%m-%dT%H:%M:59Z')|g" \
+  -e "s|\{\{ recipient \}\}|$recipient|g" \
   $TEMPLATE > $tmp
 
 curl \

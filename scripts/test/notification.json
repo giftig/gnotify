@@ -3,7 +3,7 @@
   "title": "{{ title }}",
   "message": "{{ message }}",
   "priority": 10,
-  "recipient": "giftig",
+  "recipient": "{{ recipient }}",
   "complete": false,
   "time": "{{ time }}"
 }
