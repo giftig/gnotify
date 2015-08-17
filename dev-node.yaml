@@ -61,6 +61,8 @@ event_types:
   calendar:
     icon: calendar.png
     label: google-calendar
+  rest:
+    label: API
   todo:
     icon: calendar.png  # Should change this to a checklist icon or something
     label: todo-list

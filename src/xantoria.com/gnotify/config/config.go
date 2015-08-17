@@ -54,6 +54,7 @@ type notifySendConfig struct {
 type eventTypeConfig struct {
 	Calendar basicEventConfig
 	Todo     basicEventConfig
+	Rest     basicEventConfig
 }
 type basicEventConfig struct {
 	Icon, Label string

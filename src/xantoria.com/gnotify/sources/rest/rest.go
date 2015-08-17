@@ -36,7 +36,7 @@ func handleNotification(w http.ResponseWriter, r *http.Request, source string) {
 // triggerNotification triggers a "new" notification, i.e. it has not been passed on from another
 // gnotify node, it's been triggered as a new event
 func triggerNotification(w http.ResponseWriter, r *http.Request) {
-	handleNotification(w, r, "API")
+	handleNotification(w, r, config.EventTypes.Rest.Label)
 }
 
 // routeNotification triggers handling of a notification which has been routed from another node
