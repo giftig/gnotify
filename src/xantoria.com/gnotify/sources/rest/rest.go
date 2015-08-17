@@ -30,7 +30,7 @@ func handleNotification(w http.ResponseWriter, r *http.Request, source string) {
 	}
 	notificationC <- &notif
 
-	w.WriteHeader(200)
+	w.WriteHeader(202)
 }
 
 // triggerNotification triggers a "new" notification, i.e. it has not been passed on from another
