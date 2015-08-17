@@ -45,6 +45,11 @@ func (notif *Notification) Save() {
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		// A 409 isn't too unexpected: it means we tried to save a notification which already exists
+		if resp.StatusCode == 409 {
+			log.Warning("Tried to overwrite notification %s", docId)
+			return
+		}
 		log.Error(
 			"Unexpected status code from couch when inserting notification %s: %s",
 			docId, resp.Status,
