@@ -131,7 +131,53 @@ func completeNotification(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method Not Allowed", 405)
 		return
 	}
-	http.Error(w, "Not yet implemented", 500)
+
+	// If we're not the master, 404
+	if config.Routing.Master.Host != "" {
+		http.Error(w, "", 404)
+		return
+	}
+
+	id := r.FormValue("id")
+	src := r.FormValue("src")
+
+	if id == "" || src == "" {
+		http.Error(w, "", 400)
+		return
+	}
+	docId := url.QueryEscape(fmt.Sprintf("%s:%s", id, src))
+	log.Info("Marking notification %q (%q) complete", id, src)
+
+	cfg := config.Persistence
+	u := fmt.Sprintf(
+		"http://%s:%d/%s/_design/notifications/_update/mark_complete/%s",
+		cfg.Couch.Host,
+		cfg.Couch.Port,
+		cfg.Couch.Db,
+		docId,
+	)
+	log.Debug("Hitting URL %s", u)
+
+	resp, err := http.Post(u, "text/plain", nil)
+
+	if err != nil {
+		log.Error("A problem occurred marking %q as complete: %q", docId, err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		// If we couldn't find the doc, that's a 404 our end, too.
+		if resp.StatusCode == 404 {
+			http.Error(w, "Not Found", 404)
+			return
+		}
+		log.Error("Couch returned an HTTP %d when marking %q complete", resp.StatusCode, docId)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	w.WriteHeader(200)
 }
 
 func Listen(notC chan<- *notifier.Notification) {
