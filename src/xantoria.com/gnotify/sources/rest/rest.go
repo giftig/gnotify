@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/nu7hatch/gouuid"
+
 	"xantoria.com/gnotify/config"
 	"xantoria.com/gnotify/log"
 	"xantoria.com/gnotify/notifier"
@@ -26,13 +28,21 @@ func handleNotification(w http.ResponseWriter, r *http.Request, source string) {
 		return
 	}
 
-	// Override source is provided
+	// Override source if provided
 	if source != "" {
 		notif.Source = source
 	}
+
+	// Create an ID if one wasn't provided
+	if notif.Id == "" {
+		id, _ := uuid.NewV4()
+		notif.Id = id.String()
+	}
+
 	notificationC <- &notif
 
 	w.WriteHeader(202)
+	io.WriteString(w, notif.Id)
 }
 
 // triggerNotification triggers a "new" notification, i.e. it has not been passed on from another

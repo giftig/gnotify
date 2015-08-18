@@ -11,12 +11,7 @@ fi
 
 title="$1"
 msg="$2"
-
-if [[ "$3" != "" ]]; then
-  id="$3"
-else
-  id="$RANDOM"
-fi
+id="$3"
 
 if [[ "$4" != "" ]]; then
   recipient="$4"
@@ -39,3 +34,4 @@ curl \
   -d "@$tmp" \
   "$URL" \
   -D -
+echo ''
