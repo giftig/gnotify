@@ -3,7 +3,9 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"net/url"
 
 	"xantoria.com/gnotify/config"
 	"xantoria.com/gnotify/log"
@@ -48,10 +50,12 @@ func routeNotification(w http.ResponseWriter, r *http.Request) {
 // destination and returns them to the client. This is for internal use: generally a node will
 // ask an authoritative server, backed by couchdb, if it's had any messages recently
 func fetchNotifications(w http.ResponseWriter, r *http.Request) {
-	cfg := config.Routing.Master
+	route := config.Routing.Master
+	persist := config.Persistence
+
 	// If we're not the master, direct them to where we think the master is
-	if cfg.Host != "" {
-		http.Redirect(w, r, fmt.Sprintf("%s:%d/notify/fetch/", cfg.Host, cfg.Port), 301)
+	if route.Host != "" {
+		http.Redirect(w, r, fmt.Sprintf("%s:%d/notify/fetch/", route.Host, route.Port), 301)
 		return
 	}
 
@@ -60,10 +64,65 @@ func fetchNotifications(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "", 400)
 		return
 	}
+	log.Info("Getting notifications for %q", dest)
 
-	// FIXME: Look up notifications for `dest` in couch
-	http.Error(w, fmt.Sprintf("Not yet implemented: cannot retrieve for %s", dest), 500)
-	return
+	// TODO: Pagination on this endpoint would be nice
+	u := fmt.Sprintf(
+		"http://%s:%d/%s/_design/notifications/_view/pending_by_recipient_and_time?%s",
+		persist.Couch.Host,
+		persist.Couch.Port,
+		persist.Couch.Db,
+		fmt.Sprintf(
+			"reduce=false&include_docs=true&startkey=%s&endkey=%s",
+			url.QueryEscape(fmt.Sprintf("[%q, null]", dest)),
+			url.QueryEscape(fmt.Sprintf("[%q, {}]", dest)),
+		),
+	)
+	log.Debug("Hitting URL %s", u)
+
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET", u, nil)
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		log.Error("A problem occurred getting notifications for %q: %q", dest, err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		log.Error("Couch returned an HTTP %d when getting notifications for %q", resp.StatusCode, dest)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	var data struct {
+		Rows []struct {
+			Doc notifier.Notification `json:"doc"`
+		} `json:"rows"`
+	}
+	json.NewDecoder(resp.Body).Decode(&data)
+
+	docs := []notifier.Notification{}
+	for _, row := range data.Rows {
+		docs = append(docs, row.Doc)
+	}
+
+	log.Info("Found %d pending notifications for %s", len(docs), dest)
+
+	result, err := json.Marshal(docs)
+	if err != nil {
+		log.Error("Could not marshal list of notifications from couch into JSON: %q, %q", docs, err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	w.WriteHeader(200)
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, string(result))
 }
 
 func Listen(notC chan<- *notifier.Notification) {

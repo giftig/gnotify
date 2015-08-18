@@ -39,6 +39,8 @@ func (notif *Notification) Save() {
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
+	defer resp.Body.Close()
+
 	if err != nil {
 		log.Error("Failed to insert notification %s into couch", docId)
 		return
@@ -55,5 +57,4 @@ func (notif *Notification) Save() {
 			docId, resp.Status,
 		)
 	}
-	defer resp.Body.Close()
 }
