@@ -125,12 +125,22 @@ func fetchNotifications(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, string(result))
 }
 
+// completeNotification marks a given notification as completed
+func completeNotification(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method Not Allowed", 405)
+		return
+	}
+	http.Error(w, "Not yet implemented", 500)
+}
+
 func Listen(notC chan<- *notifier.Notification) {
 	notificationC = notC
 
 	http.HandleFunc("/notify/trigger/", triggerNotification)
 	http.HandleFunc("/notify/route/", routeNotification)
 	http.HandleFunc("/notify/fetch/", fetchNotifications)
+	http.HandleFunc("/notify/complete/", completeNotification)
 
 	serviceUrl := fmt.Sprintf("%s:%d", config.Sources.Rest.Host, config.Sources.Rest.Port)
 
