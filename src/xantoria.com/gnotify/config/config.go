@@ -17,8 +17,9 @@ type loggingConfig struct {
 
 type sourceConfig struct {
 	Rest struct {
-		Host string
-		Port int
+		Host      string
+		Port      int
+		PollFetch time.Duration `yaml:"poll_fetch"`
 	}
 	Calendar struct {
 		DatetimeFormat string
@@ -135,5 +136,9 @@ func LoadConfig(file string) {
 
 	if !Persistence.Persist && Routing.Master.Host == "" {
 		log.Fatalf("Improperly configured: cannot be a master node but not be db-backed.")
+	}
+
+	if Sources.Rest.PollFetch == 0 {
+		Sources.Rest.PollFetch = 10 * time.Minute
 	}
 }

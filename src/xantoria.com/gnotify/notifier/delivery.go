@@ -40,14 +40,16 @@ func (notif *Notification) Deliver() {
 	// Create a timer which displays the notification at the correct time if not expired
 	diff := notif.Time.Sub(time.Now())
 	if diff <= 0 {
-		diff = 0
+		go func() {
+			notif.Display()
+		}()
+	} else {
+		timer := time.NewTimer(diff)
+		go func() {
+			_ = <-timer.C
+			notif.Display()
+		}()
 	}
-
-	timer := time.NewTimer(diff)
-	go func() {
-		_ = <-timer.C
-		notif.Display()
-	}()
 }
 
 // Display displays the notification to the user

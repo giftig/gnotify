@@ -16,6 +16,7 @@ sources:
   rest:
     host: localhost
     port: 6667
+    poll_fetch: 10m
 
   calendar:
     auth:
