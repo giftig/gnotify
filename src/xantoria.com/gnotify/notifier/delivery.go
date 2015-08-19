@@ -50,6 +50,7 @@ func (notif *Notification) Display() {
 
 	if cfg.NotifySend.Enabled {
 		notifySend(notif)
+		displayed = true
 	}
 	// TODO: Add more display methods here
 
@@ -77,7 +78,8 @@ func notifySend(notif *Notification) {
 	}
 
 	cmd := exec.Command(
-		"/usr/bin/notify-send",
+		"/usr/bin/env",
+		"notify-send",
 		"-i", filepath.Join(config.Static.IconPath, icon),
 		"-t", fmt.Sprintf("%d", config.Notifications.NotifySend.Duration/time.Millisecond),
 		"-u", urgency,
