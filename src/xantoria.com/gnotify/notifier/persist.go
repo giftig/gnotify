@@ -39,12 +39,12 @@ func (notif *Notification) Save() {
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
-	defer resp.Body.Close()
 
 	if err != nil {
 		log.Error("Failed to insert notification %s into couch", docId)
 		return
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		// A 409 isn't too unexpected: it means we tried to save a notification which already exists
