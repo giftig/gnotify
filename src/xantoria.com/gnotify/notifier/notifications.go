@@ -52,7 +52,6 @@ func InitNotifications(notifications <-chan *Notification) {
 		// Stick it in the registered notifications store, excluding duplicates
 		inserted := AddNotification(*notif)
 		if !inserted {
-			log.Info("Ignoring duplicate notification \"%s\" (%s)", notif.Id, notif.Title)
 			continue
 		}
 

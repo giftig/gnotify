@@ -29,18 +29,25 @@ func (notif *Notification) Deliver() {
 			}
 		}
 	}
+	if !shouldDisplay {
+		return
+	}
 
+	if notif.Complete {
+		log.Info("Ignoring expired notification \"%s\" (%s)", notif.Id, notif.Title)
+		return
+	}
 	// Create a timer which displays the notification at the correct time if not expired
 	diff := notif.Time.Sub(time.Now())
 	if diff <= 0 {
-		log.Info("Ignoring expired notification \"%s\" (%s)", notif.Id, notif.Title)
-	} else if shouldDisplay {
-		timer := time.NewTimer(diff)
-		go func() {
-			_ = <-timer.C
-			notif.Display()
-		}()
+		diff = 0
 	}
+
+	timer := time.NewTimer(diff)
+	go func() {
+		_ = <-timer.C
+		notif.Display()
+	}()
 }
 
 // Display displays the notification to the user
