@@ -66,6 +66,9 @@ func main() {
 	// Load events from the configured to-do list
 	go todo.LoadEvents(notificationC)
 
+	// Load events by hitting the rest master
+	go rest.LoadEvents(notificationC)
+
 	// Listen for routed or freshly-triggered events over REST
 	rest.Listen(notificationC)
 }

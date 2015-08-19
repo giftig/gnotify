@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"xantoria.com/gnotify/config"
@@ -95,7 +96,69 @@ func MarkComplete(docId string) (err error) {
 	return nil
 }
 
-func (notif *Notification) Complete() {
-	docId := fmt.Sprintf("%s:%s", notif.Id, notif.Source)
-	MarkComplete(docId)
+func (notif *Notification) MarkComplete() {
+	master := config.Routing.Master
+	// We're the master, so just call the internal util
+	if master.Host == "" {
+		docId := fmt.Sprintf("%s:%s", notif.Id, notif.Source)
+		MarkComplete(docId)
+		return
+	}
+
+	// Inform the master that our notification has been completed
+	u := fmt.Sprintf(
+		"http://%s:%d/notify/complete/?%s",
+		master.Host,
+		master.Port,
+		fmt.Sprintf("id=%s&src=%s", url.QueryEscape(notif.Id), url.QueryEscape(notif.Source)),
+	)
+	log.Debug("Hitting URL %s", u)
+
+	resp, err := http.Post(u, "text/plain", nil)
+
+	if err != nil {
+		log.Error("Error while telling the master node that %q is complete: %q", notif.Id, err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		log.Error(
+			"Bad status code from master while marking %q complete: %d", notif.Id, resp.StatusCode,
+		)
+		return
+	}
+}
+
+// Fetch contacts the master to retrieve notifications for the given destination
+func Fetch(dest string) (results []Notification) {
+	master := config.Routing.Master
+	// We're the master, so we don't need to load up notifications
+	if master.Host == "" {
+		return
+	}
+
+	u := fmt.Sprintf(
+		"http://%s:%d/notify/fetch/?%s",
+		master.Host,
+		master.Port,
+		fmt.Sprintf("dest=%s", url.QueryEscape(dest)),
+	)
+	log.Debug("Hitting URL %s", u)
+
+	resp, err := http.Get(u)
+
+	if err != nil {
+		log.Error("Error while fetching notifications from master: %q", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		log.Error("Bad status code from master while fetching notifications: %d", resp.StatusCode)
+		return
+	}
+
+	json.NewDecoder(resp.Body).Decode(&results)
+	return
 }
