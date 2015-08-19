@@ -56,8 +56,7 @@ func (notif *Notification) Display() {
 
 	if displayed {
 		log.Debug("Displayed notification %s (%s)", notif.Id, notif.Title)
-		notif.Complete = true
-		notif.Save()
+		notif.Complete()
 	}
 }
 

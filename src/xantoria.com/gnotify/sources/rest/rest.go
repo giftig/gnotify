@@ -156,35 +156,14 @@ func completeNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	docId := url.QueryEscape(fmt.Sprintf("%s:%s", id, src))
-	log.Info("Marking notification %q (%q) complete", id, src)
-
-	cfg := config.Persistence
-	u := fmt.Sprintf(
-		"http://%s:%d/%s/_design/notifications/_update/mark_complete/%s",
-		cfg.Couch.Host,
-		cfg.Couch.Port,
-		cfg.Couch.Db,
-		docId,
-	)
-	log.Debug("Hitting URL %s", u)
-
-	resp, err := http.Post(u, "text/plain", nil)
+	err := notifier.MarkComplete(docId)
 
 	if err != nil {
-		log.Error("A problem occurred marking %q as complete: %q", docId, err)
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		// If we couldn't find the doc, that's a 404 our end, too.
-		if resp.StatusCode == 404 {
+		if err.Error() == "404" {
 			http.Error(w, "Not Found", 404)
-			return
+		} else {
+			http.Error(w, "Internal Server Error", 500)
 		}
-		log.Error("Couch returned an HTTP %d when marking %q complete", resp.StatusCode, docId)
-		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 	w.WriteHeader(200)
