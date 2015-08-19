@@ -48,7 +48,8 @@ type notificationConfig struct {
 	NotifySend notifySendConfig `yaml:"notify_send"`
 }
 type notifySendConfig struct {
-	Duration time.Duration
+	Duration time.Duration `yaml:"duration"`
+	Enabled  bool          `yaml:"enabled"`
 }
 
 type eventTypeConfig struct {

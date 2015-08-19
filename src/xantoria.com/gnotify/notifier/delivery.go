@@ -17,6 +17,7 @@ const (
 // Deliver takes a notification and sets it up to be displayed at the right time if we're the
 // correct recipient, and routes it to the right recipient if we are aware of one
 func (notif *Notification) Deliver() {
+	// TODO: Check here if we know anything about the intended recipients and pass it on
 
 	// Figure out if we're the intended recipient of this notification
 	shouldDisplay := notif.Recipient == "" || notif.Recipient == config.Routing.RecipientID
@@ -37,29 +38,26 @@ func (notif *Notification) Deliver() {
 		timer := time.NewTimer(diff)
 		go func() {
 			_ = <-timer.C
-			notif.Display(NotifySend)
+			notif.Display()
 		}()
 	}
-
-	// TODO: Check here if we know anything about the intended recipients and pass it on
-	//       May need to take a flag argument to this method to prevent propagation loops
 }
 
 // Display displays the notification to the user
-func (notif *Notification) Display(route int) {
-	log.Debug("Displaying notification %s (%s) via method %d", notif.Id, notif.Title, route)
+func (notif *Notification) Display() {
+	cfg := config.Notifications
+	displayed := false
 
-	switch route {
-	case NotifySend:
+	if cfg.NotifySend.Enabled {
 		notifySend(notif)
-
-	default:
-		log.Error("Unknown route ID %d", route)
-		return
 	}
+	// TODO: Add more display methods here
 
-	// TODO: Doesn't do anything until it's properly synced with a local datastore
-	notif.Complete = true
+	if displayed {
+		log.Debug("Displayed notification %s (%s)", notif.Id, notif.Title)
+		notif.Complete = true
+		notif.Save()
+	}
 }
 
 // notifySend users the notify-send application to display a message to the user
