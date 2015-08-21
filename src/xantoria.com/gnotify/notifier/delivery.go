@@ -65,7 +65,6 @@ func (notif *Notification) Display() {
 
 	if displayed {
 		log.Debug("Displayed notification %s (%s)", notif.Id, notif.Title)
-		notif.MarkComplete()
 	}
 }
 
@@ -97,5 +96,7 @@ func notifySend(notif *Notification) {
 
 	if err := cmd.Run(); err != nil {
 		log.Critical("notify-send failed: `%s %s` (%v)", cmd.Path, cmd.Args, err)
+		return
 	}
+	notif.MarkComplete()
 }
