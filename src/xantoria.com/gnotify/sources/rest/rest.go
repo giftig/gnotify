@@ -143,7 +143,7 @@ func completeNotification(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// If we're not the master, 404
-	if config.Routing.Master.Host != "" {
+	if config.Node.Type != config.Master {
 		http.Error(w, "", 404)
 		return
 	}

@@ -1,3 +1,6 @@
+node:
+  type: CLIENT
+
 routing:
   recipient_id: giftig-client
   known_recipients: [

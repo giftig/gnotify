@@ -8,6 +8,11 @@ import (
 	"gopkg.in/yaml.v1"
 )
 
+const (
+	Master = "MASTER"
+	Client = "CLIENT"
+)
+
 type loggingConfig struct {
 	Type      string `yaml:"type"`
 	File      string `yaml:"file"`
@@ -43,6 +48,10 @@ type sourceConfig struct {
 	Todo struct {
 		File string
 	}
+}
+
+type nodeConfig struct {
+	Type string `yaml:"type"`
 }
 
 type notificationConfig struct {
@@ -93,6 +102,7 @@ type persistenceConfig struct {
 }
 
 // Top-level config params
+var Node nodeConfig
 var Logging loggingConfig
 var Sources sourceConfig
 var Notifications notificationConfig
@@ -112,6 +122,7 @@ func LoadConfig(file string) {
 
 	// Unmarshal the config directly into package-level structs for each section
 	cfg := struct {
+		Node          *nodeConfig
 		Logging       *loggingConfig
 		Sources       *sourceConfig
 		Notifications *notificationConfig
@@ -121,6 +132,7 @@ func LoadConfig(file string) {
 		Routing       *routingConfig
 		Persistence   *persistenceConfig
 	}{
+		Node:          &Node,
 		Logging:       &Logging,
 		Sources:       &Sources,
 		Notifications: &Notifications,
@@ -134,11 +146,29 @@ func LoadConfig(file string) {
 		log.Fatalf("Error parsing config file: %v", err)
 	}
 
-	if !Persistence.Persist && Routing.Master.Host == "" {
-		log.Fatalf("Improperly configured: cannot be a master node but not be db-backed.")
-	}
+	clean()
+}
 
+// clean checks for any misconfigurations and fails fast. It also sets some sensible defaults
+func clean() {
+	// Default poll fetching from the master to 10 mins
 	if Sources.Rest.PollFetch == 0 {
 		Sources.Rest.PollFetch = 10 * time.Minute
+	}
+
+	// Default to server mode
+	if Node.Type == "" {
+		Node.Type = Master
+	}
+
+	if Node.Type != Master && Node.Type != Client {
+		log.Fatalf("Node type must be %s or %s, not %s", Master, Client, Node.Type)
+	}
+
+	if Node.Type == Master && !Persistence.Persist {
+		log.Fatalf("Cannot be a master node but not be db-backed!")
+	}
+	if Node.Type == Master && Routing.Master.Host != "" {
+		log.Fatalf("We are acting as a master but also have a route to one?")
 	}
 }
