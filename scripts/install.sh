@@ -3,7 +3,7 @@
 install_prefix='/usr/local'
 
 if [[ "$1" != "" ]]; then
-  install_prefix="$(realpath $1)"
+  install_prefix="$1"
 fi
 
 echo "This script will install binaries, config, etc. to the system."
