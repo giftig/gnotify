@@ -25,5 +25,5 @@ mkdir -p "$install_prefix/share"
 
 # Copy binary, conf, and shared files
 cp -f 'bin/xantoria.com' "$install_prefix/bin/gnotify"
-cp -f 'etc/gnotify.conf' "$install_prefix/etc/gnotify.conf"
+cp -n 'etc/gnotify.conf' "$install_prefix/etc/gnotify.conf"
 cp -R 'share' "$install_prefix"
