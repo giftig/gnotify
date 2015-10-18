@@ -1,0 +1,125 @@
+#!/bin/bash
+# chkconfig: 345 86 34
+# author: Giftiger Wunsch (giftiger.wunsch@xantoria.com)
+# description: Backend service for validating and keeping track of \
+#              ranked lines games, as well as multiplayer games.
+
+# Import stuff to do with printing statuses, etc.
+. /etc/rc.d/init.d/functions
+
+cmd='/usr/local/bin/gnotify'
+sleep_time=1
+
+PIDFILE='/var/run/gnotify/gnotify.pid'
+SERVICE_NAME='gnotify'
+AS_USER='giftig-daemon'
+
+start() {
+  printf "Starting $SERVICE_NAME... "
+
+  if [ -f $PIDFILE ]
+  then
+    PID=$(cat $PIDFILE)
+    printf " already running: $PID"
+    echo_failure
+    echo ''
+    return
+  fi
+
+  # Run the service!
+  su $AS_USER -c "$cmd 3>&-"' & echo $! 1>&3' 3>$PIDFILE
+  PID=$(<$PIDFILE)
+
+  if [[ "$PID" == "" ]]
+  then
+    printf " failed to start!"
+    echo_failure
+    echo ''
+    return
+  fi
+
+  echo $PID > $PIDFILE
+
+  echo_success
+  echo ''
+}
+
+stop() {
+  printf "Shutting down $SERVICE_NAME... "
+  is_running
+
+  if [[ "$is_running" == "0" ]]; then
+    printf " not running!"
+    echo_failure
+    echo ''
+    return
+  fi
+
+  kill $PID -SIGINT &> /dev/null
+  sleep $sleep_time
+
+  if [[ "$?" != "0" ]]; then
+    kill $PID -SIGTERM &> /dev/null
+    sleep $sleep_time
+  fi
+
+  if [[ "$?" != "0" ]]; then
+    echo_failure
+    echo ''
+    return
+  fi
+
+  rm $PIDFILE
+
+  echo_success
+  echo ''
+}
+
+is_running() {
+  running=0
+  if [ ! -f $PIDFILE ]; then
+    return
+  fi
+
+  PID=$(cat $PIDFILE)
+
+  if [[ ! "$(ps -p $PID | grep -E ^$PID)" == "" ]]; then
+    running=1
+  fi
+}
+
+status() {
+  is_running
+
+  if [[ "$running" != "1" ]]; then
+    echo "$SERVICE_NAME is stopped"
+  else
+    echo "$SERVICE_NAME (pid $PID) is running..."
+  fi
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+
+  stop)
+    stop
+    ;;
+
+  status)
+    status
+    ;;
+
+  restart)
+    stop
+    start
+    ;;
+
+  *)
+    echo 'Usage: (start|stop|status|restart)'
+    exit 1
+    ;;
+esac
+
+exit $?
