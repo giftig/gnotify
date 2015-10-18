@@ -11,7 +11,7 @@ import (
 func LoadEvents(notifC chan *notifier.Notification) {
 	pollFetch := config.Sources.Rest.PollFetch
 
-	log.Notice("Polling for calendar events every %s", pollFetch)
+	log.Notice("Polling for REST events every %s", pollFetch)
 	ticker := time.NewTicker(pollFetch)
 	ticks := ticker.C
 
