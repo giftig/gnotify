@@ -25,11 +25,14 @@ type sourceConfig struct {
 		Host      string
 		Port      int
 		PollFetch time.Duration `yaml:"poll_fetch"`
+		Disabled  bool          `yaml:"disabled"`
 	}
 	Calendar struct {
 		DatetimeFormat string
 		DateFormat     string
-		Polling        struct {
+		Disabled       bool `yaml:"disabled"`
+
+		Polling struct {
 			Sync time.Duration
 		}
 		Auth struct {
@@ -46,7 +49,8 @@ type sourceConfig struct {
 		}
 	}
 	Todo struct {
-		File string
+		File     string
+		Disabled bool `yaml:"disabled"`
 	}
 }
 

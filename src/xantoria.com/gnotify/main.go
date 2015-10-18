@@ -61,14 +61,20 @@ func main() {
 	go notifier.InitNotifications(notificationC)
 
 	// Load events from the calendar whenever syncTicker ticks (configurable)
-	go calendar.LoadEvents(notificationC)
+	if !config.Sources.Calendar.Disabled {
+		go calendar.LoadEvents(notificationC)
+	}
 
 	// Load events from the configured to-do list
-	go todo.LoadEvents(notificationC)
+	if !config.Sources.Todo.Disabled {
+		go todo.LoadEvents(notificationC)
+	}
 
-	// Load events by hitting the rest master
-	go rest.LoadEvents(notificationC)
+	if !config.Sources.Rest.Disabled {
+		// Load events by hitting the rest master
+		go rest.LoadEvents(notificationC)
 
-	// Listen for routed or freshly-triggered events over REST
-	rest.Listen(notificationC)
+		// Listen for routed or freshly-triggered events over REST
+		rest.Listen(notificationC)
+	}
 }
