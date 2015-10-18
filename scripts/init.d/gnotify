@@ -17,9 +17,8 @@ AS_USER='giftig-daemon'
 start() {
   printf "Starting $SERVICE_NAME... "
 
-  if [ -f $PIDFILE ]
-  then
-    PID=$(cat $PIDFILE)
+  is_running
+  if [[ "$is_running" == '0' ]]; then
     printf " already running: $PID"
     echo_failure
     echo ''
