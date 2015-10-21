@@ -26,7 +26,8 @@ start() {
   fi
 
   # Run the service!
-  su $AS_USER -c "$cmd 3>&-"' & echo $! 1>&3' 3>$PIDFILE
+  export DISPLAY=:0.0
+  su $AS_USER -p -c "$cmd 3>&-"' & echo $! 1>&3' 3>$PIDFILE
   PID=$(<$PIDFILE)
 
   if [[ "$PID" == "" ]]
