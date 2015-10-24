@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"xantoria.com/gnotify/config"
@@ -128,7 +129,7 @@ func (notif *Notification) Display() {
 	}
 }
 
-// notifySend users the notify-send application to display a message to the user
+// notifySend uses the notify-send application to display a message to the user
 func notifySend(notif *Notification) {
 	// Decide on the correct urgency string for notify-send
 	urgency := "critical"
@@ -144,6 +145,10 @@ func notifySend(notif *Notification) {
 		icon = fmt.Sprintf("%s.png", urgency)
 	}
 
+	// Patch for a bug in notify-send which causes it to not show messages
+	// See www.archivum.info/ubuntu-bugs: Bug 1424243
+	msg := strings.Replace(notif.Message, "&", "and", -1)
+
 	cmd := exec.Command(
 		"/usr/bin/env",
 		"notify-send",
@@ -151,7 +156,7 @@ func notifySend(notif *Notification) {
 		"-t", fmt.Sprintf("%d", config.Notifications.NotifySend.Duration/time.Millisecond),
 		"-u", urgency,
 		notif.Title,
-		notif.Message,
+		msg,
 	)
 
 	if err := cmd.Run(); err != nil {
