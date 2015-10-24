@@ -81,16 +81,18 @@ type staticConfig struct {
 
 // Identifies an endpoint on which to inform a named recipient of a message
 // FIXME: Refactor to be inline for consistency
-type recipientConfig struct {
-	ID   string `yaml:"id"`
-	Host string
-	Port int
-}
 type routingConfig struct {
-	RecipientID     string            `yaml:"recipient_id"`
-	Groups          []string          `yaml:"recipient_groups"`
-	KnownRecipients []recipientConfig `yaml:"known_recipients"`
-	Master          struct {
+	RecipientID string   `yaml:"recipient_id"`
+	Groups      []string `yaml:"recipient_groups"`
+
+	KnownRecipients []struct {
+		ID     string   `yaml:"id"`
+		Host   string   `yaml:"host"`
+		Port   int      `yaml:"port"`
+		Groups []string `yaml:"groups"`
+	} `yaml:"known_recipients"`
+
+	Master struct {
 		Host string
 		Port int
 	}

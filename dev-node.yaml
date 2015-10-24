@@ -3,12 +3,10 @@ node:
 
 routing:
   recipient_id: giftig-client
-  known_recipients: [
-    {id: giftig-client, host: localhost, port: 6666}
-  ]
+  known_recipients: []
   master:
     host: localhost
-    port: 6666
+    port: 16666
 
 logging:
   type: console
@@ -18,7 +16,7 @@ logging:
 sources:
   rest:
     host: localhost
-    port: 6667
+    port: 16667
     poll_fetch: 10m
 
   calendar:

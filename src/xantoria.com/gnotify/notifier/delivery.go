@@ -1,7 +1,10 @@
 package notifier
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os/exec"
 	"path/filepath"
 	"time"
@@ -30,6 +33,7 @@ func (notif *Notification) Deliver() {
 		}
 	}
 	if !shouldDisplay {
+		notif.reroute()
 		return
 	}
 
@@ -39,6 +43,7 @@ func (notif *Notification) Deliver() {
 	}
 	// Create a timer which displays the notification at the correct time if not expired
 	diff := notif.Time.Sub(time.Now())
+	log.Debug("DIFF: %v", diff)
 	if diff <= 0 {
 		go func() {
 			notif.Display()
@@ -49,6 +54,61 @@ func (notif *Notification) Deliver() {
 			_ = <-timer.C
 			notif.Display()
 		}()
+	}
+}
+
+// reroute checks if we know how to contact the recipient of the given notification and passes it
+// on to them if we do. It respects both recipient ID and groups
+func (notif *Notification) reroute() {
+	// Marshal the notification ready to be sent to recipients
+	data, err := json.Marshal(notif)
+	if err != nil {
+		log.Error("Failed to marshal notification for notification %s", notif.Id)
+		return
+	}
+	rawData := bytes.NewBuffer(data)
+
+	for _, recipient := range config.Routing.KnownRecipients {
+		validRecipient := false
+		if recipient.ID == notif.Recipient {
+			validRecipient = true
+		}
+
+		// If recipient ID didn't match, check groups
+		if !validRecipient {
+			for _, group := range recipient.Groups {
+				if group == notif.Recipient {
+					validRecipient = true
+					break
+				}
+			}
+		}
+
+		// This obviously isn't who the message is for, so try the next one
+		if !validRecipient {
+			continue
+		}
+
+		// This is the correct recipient, so let's pass the message on
+		url := fmt.Sprintf("http://%s:%d/notify/route/", recipient.Host, recipient.Port)
+		resp, err := http.Post(url, "application/json", rawData)
+
+		// The client may well not be online, in which case they'll ask for it when they come on
+		if err != nil {
+			log.Warning("Failed to deliver notification %s to %s: %v", notif.Id, recipient.ID, err)
+			continue
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+			log.Error(
+				"Unexpected HTTP %d from client %s when delivering notification %s",
+				resp.StatusCode,
+				recipient.ID,
+				notif.Id,
+			)
+			continue
+		}
 	}
 }
 
