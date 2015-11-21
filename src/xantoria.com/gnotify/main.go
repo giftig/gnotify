@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"time"
 
 	"xantoria.com/gnotify/config"
 	"xantoria.com/gnotify/log"
@@ -54,6 +55,11 @@ func main() {
 	log.Init()
 	log.Notice("Service starting")
 	log.Info("Using settings %s", settingsFile)
+
+	if config.Startup.Delay != 0 {
+		log.Info("Waiting %s before starting...", config.Startup.Delay)
+		time.Sleep(config.Startup.Delay)
+	}
 
 	notificationC := make(chan *notifier.Notification)
 

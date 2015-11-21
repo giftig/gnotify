@@ -98,6 +98,10 @@ type routingConfig struct {
 	}
 }
 
+type startupConfig struct {
+	Delay time.Duration `yaml:"delay"`
+}
+
 type persistenceConfig struct {
 	Couch struct {
 		Host string
@@ -116,6 +120,7 @@ var Static staticConfig
 var EventTypes eventTypeConfig
 var Routing routingConfig
 var Persistence persistenceConfig
+var Startup startupConfig
 
 /**
  * Load config from the given file and stick it into Config
@@ -137,6 +142,7 @@ func LoadConfig(file string) {
 		Static        *staticConfig
 		Routing       *routingConfig
 		Persistence   *persistenceConfig
+		Startup       *startupConfig
 	}{
 		Node:          &Node,
 		Logging:       &Logging,
@@ -146,6 +152,7 @@ func LoadConfig(file string) {
 		Static:        &Static,
 		Routing:       &Routing,
 		Persistence:   &Persistence,
+		Startup:       &Startup,
 	}
 
 	if err = yaml.Unmarshal(data, &cfg); err != nil {
