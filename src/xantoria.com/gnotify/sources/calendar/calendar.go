@@ -30,7 +30,7 @@ type CalendarDate struct {
 }
 
 // authenticate auths the service with google via OAuth
-func authenticate() (transport *oauth.Transport) {
+func authenticate() (transport *oauth.Transport, err error) {
 	googleConfig := config.Sources.Calendar.Auth
 	code := googleConfig.Account.Code
 
@@ -42,7 +42,7 @@ func authenticate() (transport *oauth.Transport) {
 		Scope:        googleConfig.Scope,
 		AuthURL:      googleConfig.AuthEndpoint,
 		TokenURL:     googleConfig.TokenEndpoint,
-		TokenCache:   oauth.CacheFile("_oauth_cache.json"),
+		TokenCache:   oauth.CacheFile("_oauth_cache.json"), // FIXME: Make configurable
 	}
 	transport = &oauth.Transport{Config: oauthConfig}
 
@@ -56,7 +56,7 @@ func authenticate() (transport *oauth.Transport) {
 			return
 		}
 		if token, err = transport.Exchange(code); err != nil {
-			log.Fatal("OAuth token exchange failed", err)
+			return
 		}
 	}
 
@@ -70,7 +70,12 @@ func GetCalendar(notifs chan *notifier.Notification) {
 	conf := config.Sources.Calendar
 	log.Info("Fetching events (calendar %s)", conf.Auth.Account.CalendarID)
 
-	transport := authenticate()
+	transport, err := authenticate()
+	if err != nil {
+		log.Error("OAuth token exchange failed: %v", err)
+		return
+	}
+
 	now := url.QueryEscape(time.Now().Format(conf.DatetimeFormat))
 
 	// Get future events
