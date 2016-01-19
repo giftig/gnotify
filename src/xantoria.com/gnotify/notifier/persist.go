@@ -65,7 +65,7 @@ func (notif *Notification) Save() {
 // MarkComplete calls the relevant couch update handler to mark a notification as complete
 // Takes the document ID in couch as the only argument. Returns an error if the request failed
 func MarkComplete(docId string) (err error) {
-	log.Info("Marking notification %q complete", docId)
+	log.Info("Marking notification %q complete in couch", docId)
 
 	cfg := config.Persistence
 	u := fmt.Sprintf(
@@ -112,6 +112,7 @@ func (notif *Notification) MarkComplete() {
 		master.Port,
 		fmt.Sprintf("id=%s&src=%s", url.QueryEscape(notif.Id), url.QueryEscape(notif.Source)),
 	)
+	log.Info("Marking %s as complete with master (%s)", notif.Id, master.Host)
 	log.Debug("Hitting URL %s", u)
 
 	resp, err := http.Post(u, "text/plain", nil)

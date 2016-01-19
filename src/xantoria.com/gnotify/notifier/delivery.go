@@ -21,8 +21,6 @@ const (
 // Deliver takes a notification and sets it up to be displayed at the right time if we're the
 // correct recipient, and routes it to the right recipient if we are aware of one
 func (notif *Notification) Deliver() {
-	// TODO: Check here if we know anything about the intended recipients and pass it on
-
 	// Figure out if we're the intended recipient of this notification
 	shouldDisplay := notif.Recipient == "" || notif.Recipient == config.Routing.RecipientID
 	if !shouldDisplay {
@@ -42,6 +40,7 @@ func (notif *Notification) Deliver() {
 		log.Info("Ignoring expired notification \"%s\" (%s)", notif.Id, notif.Title)
 		return
 	}
+
 	// Create a timer which displays the notification at the correct time if not expired
 	diff := notif.Time.Sub(time.Now())
 	log.Debug("DIFF: %v", diff)
@@ -69,6 +68,7 @@ func (notif *Notification) reroute() {
 	}
 	rawData := bytes.NewBuffer(data)
 
+	// TODO: Probably better to make this all asynchronous, spinning up goroutines for each
 	for _, recipient := range config.Routing.KnownRecipients {
 		validRecipient := false
 		if recipient.ID == notif.Recipient {
@@ -93,10 +93,14 @@ func (notif *Notification) reroute() {
 		// This is the correct recipient, so let's pass the message on
 		url := fmt.Sprintf("http://%s:%d/notify/route/", recipient.Host, recipient.Port)
 		resp, err := http.Post(url, "application/json", rawData)
+		log.Info("Forwarding notification %s to %s (%s)...", notif.Id, recipient.ID, recipient.Host)
 
 		// The client may well not be online, in which case they'll ask for it when they come on
 		if err != nil {
-			log.Warning("Failed to deliver notification %s to %s: %v", notif.Id, recipient.ID, err)
+			log.Warning(
+				"Failed to deliver notification %s to %s (%s): %v",
+				notif.Id, recipient.ID, recipient.Host, err,
+			)
 			continue
 		}
 		defer resp.Body.Close()
