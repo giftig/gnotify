@@ -2,7 +2,7 @@
 
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 TEMPLATE="$DIR/notification.json"
-URL='http://localhost:6666/notify/trigger/'
+URL='http://localhost:16666/notify/trigger/'
 
 if [[ "$1" == "" || "$2" == "" ]]; then
   echo 'Usage: notify title message [id] [recipient]'
