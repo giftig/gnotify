@@ -156,6 +156,7 @@ func completeNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	docId := url.QueryEscape(fmt.Sprintf("%s:%s", id, src))
+	log.Info("Notification %s acknowledged by %s", docId, r.RemoteAddr)
 	err := notifier.MarkComplete(docId)
 
 	if err != nil {
