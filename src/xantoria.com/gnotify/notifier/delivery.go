@@ -16,6 +16,7 @@ import (
 
 const (
 	NotifySend = iota
+	AudioAlert = iota
 )
 
 // Deliver takes a notification and sets it up to be displayed at the right time if we're the
@@ -126,6 +127,10 @@ func (notif *Notification) Display() {
 		notifySend(notif)
 		displayed = true
 	}
+	if cfg.AudioAlert.Enabled {
+		audioAlert(notif)
+		displayed = true
+	}
 	// TODO: Add more display methods here
 
 	if displayed {
@@ -168,4 +173,47 @@ func notifySend(notif *Notification) {
 		return
 	}
 	notif.MarkComplete()
+}
+
+func audioAlert(notif *Notification) {
+	cfg := config.Notifications.AudioAlert
+
+	sound := cfg.DefaultSound
+	maxThresh := 0
+
+	for thresh, snd := range cfg.Sounds {
+		if notif.Priority > thresh && thresh > maxThresh {
+			maxThresh = thresh
+			sound = snd
+		}
+	}
+
+	// Drop out early if we don't have a sound
+	if sound == "" {
+		log.Warning("[%s, priority %d] No sound configured; aborting", notif.Id, notif.Priority)
+		return
+	}
+
+	// TODO: Implement a couple more drivers for sounds
+	switch cfg.Driver {
+	case "mplayer":
+		cmd := exec.Command(
+			"/usr/bin/env",
+			"mplayer",
+			"-really-quiet", // I shit you not, that's the actual flag
+			"-msglevel", "all=0",
+			sound,
+		)
+
+		if err := cmd.Run(); err != nil {
+			log.Critical("mplayer failed: `%s %s` (%v)", cmd.Path, cmd.Args, err)
+			return
+		}
+
+	default:
+		log.Error(
+			"[%s] Driver %s not supported; currently only mplayer is supported! Aborting.",
+			notif.Id, cfg.Driver,
+		)
+	}
 }

@@ -60,10 +60,17 @@ type nodeConfig struct {
 
 type notificationConfig struct {
 	NotifySend notifySendConfig `yaml:"notify_send"`
+	AudioAlert audioAlertConfig `yaml:"audio_alert"`
 }
 type notifySendConfig struct {
 	Duration time.Duration `yaml:"duration"`
 	Enabled  bool          `yaml:"enabled"`
+}
+type audioAlertConfig struct {
+	Enabled      bool           `yaml:"enabled"`
+	Driver       string         `yaml:"driver"`
+	Sounds       map[int]string `yaml:"sounds"`
+	DefaultSound string         `yaml:"default_sound"`
 }
 
 type eventTypeConfig struct {
