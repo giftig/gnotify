@@ -79,11 +79,13 @@ func MarkComplete(docId string) (err error) {
 
 	resp, err := http.Post(u, "text/plain", nil)
 
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		log.Error("A problem occurred marking %q as complete: %q", docId, err)
 		return
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		if resp.StatusCode != 404 {
@@ -117,11 +119,13 @@ func (notif *Notification) MarkComplete() {
 
 	resp, err := http.Post(u, "text/plain", nil)
 
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		log.Error("Error while telling the master node that %q is complete: %q", notif.Id, err)
 		return
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		log.Error(
@@ -149,11 +153,13 @@ func Fetch(dest string) (results []Notification) {
 
 	resp, err := http.Get(u)
 
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		log.Error("Error while fetching notifications from master: %q", err)
 		return
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		log.Error("Bad status code from master while fetching notifications: %d", resp.StatusCode)
