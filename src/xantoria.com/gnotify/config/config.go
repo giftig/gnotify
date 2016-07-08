@@ -71,6 +71,8 @@ type audioAlertConfig struct {
 	Driver       string         `yaml:"driver"`
 	Sounds       map[int]string `yaml:"sounds"`
 	DefaultSound string         `yaml:"default_sound"`
+	CutOffLength int            `yaml:"cutoff_length"`
+	Repeats      int            `yaml:"repeats"`
 }
 
 type eventTypeConfig struct {
@@ -190,5 +192,15 @@ func clean() {
 	}
 	if Node.Type == Master && Routing.Master.Host != "" {
 		log.Fatalf("We are acting as a master but also have a route to one?")
+	}
+
+	// Some AudioAlert defaults if this type of delivery is enabled
+	if Notifications.AudioAlert.Enabled {
+		if Notifications.AudioAlert.Repeats == 0 {
+			Notifications.AudioAlert.Repeats = 1
+		}
+		if Notifications.AudioAlert.CutOffLength == 0 {
+			Notifications.AudioAlert.CutOffLength = 15
+		}
 	}
 }

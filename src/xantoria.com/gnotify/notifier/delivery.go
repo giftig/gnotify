@@ -202,9 +202,12 @@ func audioAlert(notif *Notification) {
 			"mplayer",
 			"-really-quiet", // I shit you not, that's the actual flag
 			"-msglevel", "all=0",
+			"-endpos", fmt.Sprintf("%d", cfg.CutOffLength),
+			"-loop", fmt.Sprintf("%d", cfg.Repeats),
 			sound,
 		)
 
+		log.Debug("Command: %s %s", cmd.Path, cmd.Args)
 		if err := cmd.Run(); err != nil {
 			log.Critical("mplayer failed: `%s %s` (%v)", cmd.Path, cmd.Args, err)
 			return
