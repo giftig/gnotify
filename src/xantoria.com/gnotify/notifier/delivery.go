@@ -124,11 +124,15 @@ func (notif *Notification) Display() {
 	displayed := false
 
 	if cfg.NotifySend.Enabled {
-		notifySend(notif)
+		go func() {
+			notifySend(notif)
+		}()
 		displayed = true
 	}
 	if cfg.AudioAlert.Enabled {
-		audioAlert(notif)
+		go func() {
+			audioAlert(notif)
+		}()
 		displayed = true
 	}
 	// TODO: Add more display methods here
@@ -168,6 +172,7 @@ func notifySend(notif *Notification) {
 		msg,
 	)
 
+	log.Debug("Command: %s %s", cmd.Path, cmd.Args)
 	if err := cmd.Run(); err != nil {
 		log.Critical("notify-send failed: `%s %s` (%v)", cmd.Path, cmd.Args, err)
 		return
