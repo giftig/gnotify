@@ -187,7 +187,7 @@ func audioAlert(notif *Notification) {
 	maxThresh := 0
 
 	for thresh, snd := range cfg.Sounds {
-		if notif.Priority > thresh && thresh > maxThresh {
+		if notif.Priority >= thresh && thresh > maxThresh {
 			maxThresh = thresh
 			sound = snd
 		}
