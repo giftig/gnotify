@@ -213,7 +213,7 @@ func audioAlert(notif *Notification) {
 			"mplayer",
 			"-really-quiet", // I shit you not, that's the actual flag
 			"-msglevel", "all=0",
-			"-endpos", fmt.Sprintf("%d", cfg.CutOffLength),
+			"-endpos", fmt.Sprintf("%d", cfg.CutOffLength/time.Second),
 			"-loop", fmt.Sprintf("%d", cfg.Repeats),
 			sound,
 		)
@@ -245,6 +245,7 @@ func speak(notif *Notification) {
 		cmd := exec.Command(
 			"/usr/bin/env",
 			"espeak",
+			"-a", "200",
 			"-v", cfg.Voice,
 			msg,
 		)

@@ -72,7 +72,7 @@ type audioAlertConfig struct {
 	Driver       string         `yaml:"driver"`
 	Sounds       map[int]string `yaml:"sounds"`
 	DefaultSound string         `yaml:"default_sound"`
-	CutOffLength int            `yaml:"cutoff_length"`
+	CutOffLength time.Duration  `yaml:"cutoff_length"`
 	Repeats      int            `yaml:"repeats"`
 }
 type speakConfig struct {
