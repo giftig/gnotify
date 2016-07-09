@@ -61,6 +61,7 @@ type nodeConfig struct {
 type notificationConfig struct {
 	NotifySend notifySendConfig `yaml:"notify_send"`
 	AudioAlert audioAlertConfig `yaml:"audio_alert"`
+	Speak      speakConfig      `yaml:"speak"`
 }
 type notifySendConfig struct {
 	Duration time.Duration `yaml:"duration"`
@@ -73,6 +74,12 @@ type audioAlertConfig struct {
 	DefaultSound string         `yaml:"default_sound"`
 	CutOffLength int            `yaml:"cutoff_length"`
 	Repeats      int            `yaml:"repeats"`
+}
+type speakConfig struct {
+	Enabled   bool   `yaml:"enabled"`
+	Driver    string `yaml:"driver"`
+	Voice     string `yaml:"voice"`
+	SpeakBody bool   `yaml:"speak_body"`
 }
 
 type eventTypeConfig struct {

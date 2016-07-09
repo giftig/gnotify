@@ -66,6 +66,11 @@ notifications:
     default_sound: /usr/share/sounds/gnome/default/alerts/glass.ogg
     sounds:
       7: /usr/share/sounds/gnome/default/alerts/bark.ogg
+  speak:
+    enabled: true
+    driver: espeak
+    speak_body: true
+    voice: default
 
 event_types:
   calendar:

@@ -129,13 +129,19 @@ func (notif *Notification) Display() {
 		}()
 		displayed = true
 	}
-	if cfg.AudioAlert.Enabled {
+
+	// Do these synchronously if they're both enabled
+	if cfg.AudioAlert.Enabled || cfg.Speak.Enabled {
 		go func() {
-			audioAlert(notif)
+			if cfg.AudioAlert.Enabled {
+				audioAlert(notif)
+			}
+			if cfg.Speak.Enabled {
+				speak(notif)
+			}
 		}()
 		displayed = true
 	}
-	// TODO: Add more display methods here
 
 	if displayed {
 		log.Debug("Displayed notification %s (%s)", notif.Id, notif.Title)
@@ -221,6 +227,36 @@ func audioAlert(notif *Notification) {
 	default:
 		log.Error(
 			"[%s] Driver %s not supported; currently only mplayer is supported! Aborting.",
+			notif.Id, cfg.Driver,
+		)
+	}
+}
+
+func speak(notif *Notification) {
+	cfg := config.Notifications.Speak
+
+	msg := notif.Title
+	if cfg.SpeakBody {
+		msg = fmt.Sprintf("%s. %s", msg, notif.Message)
+	}
+
+	switch cfg.Driver {
+	case "espeak":
+		cmd := exec.Command(
+			"/usr/bin/env",
+			"espeak",
+			"-v", cfg.Voice,
+			msg,
+		)
+
+		log.Debug("Command: %s %s", cmd.Path, cmd.Args)
+		if err := cmd.Run(); err != nil {
+			log.Critical("espeak failed: `%s %s` (%v)", cmd.Path, cmd.Args, err)
+			return
+		}
+	default:
+		log.Error(
+			"[%s] Driver %s not supported; currently only espeak is supported! Aborting.",
 			notif.Id, cfg.Driver,
 		)
 	}
