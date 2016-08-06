@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -143,6 +145,13 @@ func (notif *Notification) Display() {
 		displayed = true
 	}
 
+	if cfg.Pushover.Enabled {
+		go func() {
+			pushover(notif)
+		}()
+		displayed = true
+	}
+
 	if displayed {
 		log.Debug("Displayed notification %s (%s)", notif.Id, notif.Title)
 	}
@@ -260,5 +269,118 @@ func speak(notif *Notification) {
 			"[%s] Driver %s not supported; currently only espeak is supported! Aborting.",
 			notif.Id, cfg.Driver,
 		)
+	}
+}
+
+// pushover uses the pushover API (pushover.net) to send notifications to mobile devices
+func pushover(notif *Notification) {
+	cfg := config.Notifications.Pushover
+
+	// These limits are enforced by pushover, so better make sure they're respected
+	maxTitleLength := 250
+	maxMessageLength := 1024
+
+	title := notif.Title
+	if len(title) > maxTitleLength {
+		title = title[:maxTitleLength-1] + "…"
+	}
+	message := notif.Message
+	if len(message) > maxMessageLength {
+		message = message[:maxMessageLength-1] + "…"
+	} else if message == "" {
+		message = "(no message)" // pushover doesn't allow blank messages
+	}
+
+	data := url.Values{
+		"token":     {cfg.ApiKey},
+		"user":      {cfg.UserKey},
+		"title":     {title},
+		"message":   {message},
+		"timestamp": {string(notif.Time.Unix())},
+	}
+
+	// Pushover supports priority -2 (lowest) to +2 (emergency)
+	var priority int32
+	if notif.Priority < TRIVIAL {
+		priority = -2
+	} else if notif.Priority < NORMAL {
+		priority = -1
+	} else if notif.Priority < IMPORTANT {
+		priority = 0
+	} else if notif.Priority < URGENT {
+		priority = 1
+	} else {
+		priority = 2
+
+		// Emergency-level notifications require a retry policy. Renotify every 30s for up to 10m
+		data.Add("retry", "30")
+		data.Add("expire", "600")
+	}
+	data.Add("priority", string(priority))
+
+	if cfg.Devices != "" {
+		data.Add("devices", cfg.Devices)
+	}
+
+	attempt := 0
+	retries := 3
+
+	for true {
+		resp, err := http.PostForm(cfg.Endpoint, data)
+		if err != nil {
+			attempt++
+			log.Error("Pushover failed for %s (network error), attempt %d: %v", notif.Id, attempt, err)
+			if attempt >= retries {
+				break
+			} else {
+				continue
+			}
+		}
+
+		defer resp.Body.Close()
+		status := resp.StatusCode
+		if status >= 200 && status <= 299 {
+			break
+		}
+
+		// Pushover done goofed so we'll log, wait 30s, and try again
+		if status >= 500 && status <= 599 {
+			log.Error(
+				"Pushover failed for %s (%d from pushover), attempt %d: %v", notif.Id, status, attempt,
+			)
+			// Pushover would like us to wait at least 30 seconds before retrying
+			time.Sleep(30 * time.Second)
+			continue
+		}
+
+		// We done goofed somehow so we'll critical and not try again
+		if status == 400 {
+			body, err := ioutil.ReadAll(resp.Body)
+			var details string
+			if err != nil {
+				details = "(failed to read response body)"
+			} else {
+				details = string(body)
+			}
+
+			log.Critical(
+				"Pushover served a 400 for notification %s. Not trying again. Details: %s",
+				notif.Id, details,
+			)
+			break
+		}
+
+		if status == 429 {
+			log.Critical(
+				"Pushover is rate-limiting us (notification %s): quota exceeded. Not trying again.",
+				notif.Id,
+			)
+			break
+		}
+
+		log.Critical(
+			"Unexpected status %s from pushover (notification %s). Not trying again.", status, notif.Id,
+		)
+		break
 	}
 }

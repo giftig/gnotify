@@ -62,6 +62,7 @@ type notificationConfig struct {
 	NotifySend notifySendConfig `yaml:"notify_send"`
 	AudioAlert audioAlertConfig `yaml:"audio_alert"`
 	Speak      speakConfig      `yaml:"speak"`
+	Pushover   pushoverConfig   `yaml:"pushover"`
 }
 type notifySendConfig struct {
 	Duration time.Duration `yaml:"duration"`
@@ -80,6 +81,13 @@ type speakConfig struct {
 	Driver    string `yaml:"driver"`
 	Voice     string `yaml:"voice"`
 	SpeakBody bool   `yaml:"speak_body"`
+}
+type pushoverConfig struct {
+	Enabled  bool   `yaml:"enabled"`
+	ApiKey   string `yaml:"api_key"`
+	UserKey  string `yaml:"user_key"`
+	Devices  string `yaml:"devices"`
+	Endpoint string `yaml:"endpoint"`
 }
 
 type eventTypeConfig struct {
@@ -209,5 +217,9 @@ func clean() {
 		if Notifications.AudioAlert.CutOffLength == 0 {
 			Notifications.AudioAlert.CutOffLength = 15
 		}
+	}
+
+	if Notifications.Pushover.Enabled && Notifications.Pushover.Endpoint == "" {
+		Notifications.Pushover.Endpoint = "https://api.pushover.net/1/messages.json"
 	}
 }

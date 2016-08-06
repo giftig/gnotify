@@ -71,6 +71,12 @@ notifications:
     driver: espeak
     speak_body: true
     voice: default
+  pushover:
+    enabled: true
+    endpoint: https://api.pushover.net/1/messages.json
+    api_key: replaceme
+    user_key: replaceme
+    devices: device1,device2,device3
 
 event_types:
   calendar:
