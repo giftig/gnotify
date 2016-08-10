@@ -77,8 +77,10 @@ func main() {
 	}
 
 	if !config.Sources.Rest.Disabled {
-		// Load events by hitting the rest master
-		go rest.LoadEvents(notificationC)
+		// Load events by hitting the rest master, assuming that's not this node
+		if config.Node.Type != config.Master {
+			go rest.LoadEvents(notificationC)
+		}
 
 		// Listen for routed or freshly-triggered events over REST
 		rest.Listen(notificationC)

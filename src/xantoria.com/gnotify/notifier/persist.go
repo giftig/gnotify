@@ -138,10 +138,6 @@ func (notif *Notification) MarkComplete() {
 // Fetch contacts the master to retrieve notifications for the given destination
 func Fetch(dest string) (results []Notification) {
 	master := config.Routing.Master
-	// We're the master, so we don't need to load up notifications
-	if master.Host == "" {
-		return
-	}
 
 	u := fmt.Sprintf(
 		"http://%s:%d/notify/fetch/?%s",
