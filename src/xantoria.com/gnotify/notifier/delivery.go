@@ -26,17 +26,28 @@ const (
 func (notif *Notification) Deliver() {
 	// Figure out if we're the intended recipient of this notification
 	shouldDisplay := notif.Recipient == "" || notif.Recipient == config.Routing.RecipientID
+	groupMatch := false
+
+	// Are we at least in the right group?
 	if !shouldDisplay {
 		for _, group := range config.Routing.Groups {
 			if group == notif.Recipient {
 				shouldDisplay = true
+				groupMatch = true
 				break
 			}
 		}
 	}
-	if !shouldDisplay {
-		notif.reroute()
-		return
+
+	// Try to reroute if we're not the correct recipient
+	if !shouldDisplay || groupMatch {
+		go func() {
+			notif.reroute()
+		}()
+
+		if !shouldDisplay {
+			return
+		}
 	}
 
 	if notif.Complete {
