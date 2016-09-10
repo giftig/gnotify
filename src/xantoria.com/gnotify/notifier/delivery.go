@@ -327,7 +327,7 @@ func pushover(notif *Notification) {
 		data.Add("retry", "30")
 		data.Add("expire", "600")
 	}
-	data.Add("priority", string(priority))
+	data.Add("priority", fmt.Sprintf("%d", priority))
 
 	if cfg.Devices != "" {
 		data.Add("devices", cfg.Devices)
